@@ -12,19 +12,31 @@
     "storage"
   ],
   "host_permissions": [
-    "https://*.youtube.com/*"
+    "https://*.youtube.com/*",
+    "http://localhost:8000/*"
   ],
   "content_scripts": [
     {
-      "matches": ["https://*.youtube.com/watch*"],
-      "js": ["content.js"],
-      "css": ["sidebar.css"]
+      "matches": [
+        "https://*.youtube.com/watch*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "css": [
+        "sidebar.css"
+      ]
     }
   ],
   "web_accessible_resources": [
     {
-      "resources": ["sidebar.html", "sidebar.js"],
-      "matches": ["https://*.youtube.com/*"]
+      "resources": [
+        "sidebar.html",
+        "sidebar.js"
+      ],
+      "matches": [
+        "https://*.youtube.com/*"
+      ]
     }
   ],
   "background": {

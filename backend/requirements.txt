@@ -1,9 +1,6 @@
-# API frameworks
 fastapi
 uvicorn
 flask
-
-# Utilities
 pydantic
 httpx
 python-dotenv
