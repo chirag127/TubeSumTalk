@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TubeSumTalk</title>
+    <link rel="stylesheet" href="sidebar.css">
+</head>
+<body>
+    <div class="sidebar-container">
+        <div class="sidebar-header">
+            <h1>TubeSumTalk</h1>
+            <button id="close-button" title="Close Sidebar">×</button>
+        </div>
+        
+        <div class="video-info">
+            <div id="video-thumbnail-container">
+                <img id="video-thumbnail" src="" alt="Video Thumbnail">
+            </div>
+            <h2 id="video-title">Loading video information...</h2>
+            <p id="video-channel"></p>
+        </div>
+        
+        <div class="action-buttons">
+            <button id="summarize-button" class="primary-button">Summarize</button>
+            <button id="read-aloud-button" class="secondary-button" disabled>Read Aloud</button>
+        </div>
+        
+        <div class="tts-controls" style="display: none;">
+            <div class="control-group">
+                <label for="voice-speed">Speed:</label>
+                <input type="range" id="voice-speed" min="0.5" max="2" step="0.1" value="1">
+                <span id="voice-speed-value">1.0</span>
+            </div>
+            <div class="control-group">
+                <label for="voice-pitch">Pitch:</label>
+                <input type="range" id="voice-pitch" min="0.5" max="2" step="0.1" value="1">
+                <span id="voice-pitch-value">1.0</span>
+            </div>
+        </div>
+        
+        <div class="summary-container">
+            <div id="loading-indicator" style="display: none;">
+                <div class="spinner"></div>
+                <p>Generating summary...</p>
+            </div>
+            
+            <div id="error-message" style="display: none;">
+                <p>Error: <span id="error-text"></span></p>
+            </div>
+            
+            <div id="summary-content"></div>
+        </div>
+    </div>
+    
+    <script src="sidebar.js"></script>
+</body>
+</html>
