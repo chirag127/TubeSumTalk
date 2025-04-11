@@ -1,3 +1,0 @@
-"""
-TubeSumTalk Utilities Package
-"""

@@ -1,8 +1,0 @@
-fastapi
-uvicorn
-flask
-pydantic
-httpx
-python-dotenv
-yt-dlp
-google-generativeai
