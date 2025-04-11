@@ -1,0 +1,20 @@
+{
+  "name": "youtube-video-summarizer-sidebar",
+  "version": "1.0.0",
+  "description": "Browser extension and backend to summarize YouTube videos and read aloud summaries.",
+  "main": "backend/server.js",
+  "scripts": {
+    "start": "node backend/server.js",
+    "dev": "nodemon backend/server.js",
+    "generate-icons": "node scripts/generate-icons.js"
+  },
+  "author": "chirag127",
+  "license": "MIT",
+  "workspaces": [
+    "backend",
+    "extension"
+  ],
+  "dependencies": {
+    "sharp": "^0.34.1"
+  }
+}

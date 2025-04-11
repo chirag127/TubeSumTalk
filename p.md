@@ -1,108 +1,176 @@
-Here’s a complete **Product Requirements Document (PRD)** for your YouTube Summarizer + Read-Aloud browser extension:
+Here's the full **Product Requirements Document (PRD)** for your **YouTube Video Summarizer + Read Aloud Sidebar Extension**:
 
 ---
 
-# 📄 Product Requirements Document (PRD)
-## Project Name: **TubeSumTalk**
-**Description**: A browser extension that summarizes YouTube videos and reads the summary aloud with word-by-word highlighting in a sidebar.
+# **Product Requirements Document (PRD)**
+**Product Name:** YouTube Video Summarizer + Read Aloud Sidebar
+**Platform:** Browser Extension (Chrome, Edge, Firefox)
+**Owner:** chirag127
+**Last Updated:** April 11, 2025
 
 ---
 
-## 🧩 1. Goals
-- Allow users to view a concise summary of any YouTube video in a sidebar.
-- Provide a “Read Aloud” feature for the summary with real-time word-by-word highlighting.
-- Work across Chrome, Edge, and Firefox.
+## **1. Overview**
+
+The **YouTube Video Summarizer + Read Aloud Sidebar Extension** is a browser extension that automatically summarizes YouTube videos and displays the summary in a sidebar on the video page. Additionally, it offers a "Read Aloud" feature that speaks the summary out loud with real-time, word-by-word highlighting.
 
 ---
 
-## 🖥️ 2. Functional Requirements
+## **2. Goals**
 
-### 🔹 2.1 Sidebar UI
-- Inject a collapsible sidebar into YouTube video pages.
-- Sidebar contains:
-  - Video title and thumbnail.
-  - Summary content.
-  - “Summarize” button.
-  - “Read Aloud” button with pause/play control.
-  - Voice speed & pitch settings (optional).
-
-### 🔹 2.2 Summarization Flow
-- On clicking “Summarize”, the extension:
-  - Extracts video ID.
-  - Sends request to backend with video URL/ID.
-  - Backend uses `yt-dlp` to extract subtitles (or auto-generates them if missing).
-  - Summarization is handled by Gemini 2.0 Flash Lite via FastAPI.
-  - Summary is returned and displayed in the sidebar.
-
-### 🔹 2.3 Read-Aloud Flow
-- Clicking “Read Aloud”:
-  - Uses Web Speech API (TTS) to read the summary.
-  - Highlights the current word being spoken using `range.getBoundingClientRect()` or DOM span-wrapping.
-  - Supports pause/resume functionality.
+- Summarize YouTube videos using AI.
+- Display summary in a non-intrusive sidebar.
+- Provide a Read Aloud feature with word-level highlighting.
+- Support multiple browsers: Chrome, Edge, Firefox.
+- Maintain fast, smooth UX with secure AI processing.
 
 ---
 
-## 🛠️ 3. Technical Requirements
+## **3. Features**
 
-### ✅ 3.1 Frontend (Browser Extension)
-- **Tech**: Manifest V3, HTML, CSS, JavaScript
-- **Browser Support**: Chrome, Edge, Firefox
-- **Key Components**:
-  - `content.js`: Inject sidebar and handle DOM interaction.
-  - `sidebar.html`: Layout of the sidebar.
-  - `sidebar.js`: Logic for fetching summary, handling TTS, highlighting.
-  - `background.js`: Optional for long-lived communication.
+### **3.1. Auto Summary Generation**
+- Automatically detect when a user is on a YouTube video page.
+- Extract the transcript using **yt-dlp** in the backend.
+- Send transcript to **Gemini 2.0 Flash Lite** via backend for summarization.
+- Display the summary in the extension's sidebar.
 
-### ✅ 3.2 Backend (FastAPI)
-- **Tech**: Python + FastAPI
-- **Endpoints**:
-  - `POST /summarize`: Accepts YouTube URL or video ID, returns summary.
-    - Uses `yt-dlp` to extract subtitles.
-    - Converts to transcript text.
-    - Sends to Gemini 2.0 Flash Lite for summarization.
-- **AI Provider**: Gemini 2.0 Flash Lite API (OpenRouter or Google endpoint)
+### **3.2. Sidebar UI**
+- Toggleable sidebar on the right of the YouTube video.
+- Displays:
+  - Title of video
+  - AI-generated summary
+  - "Read Aloud" play/pause buttons
+  - Settings icon (for TTS settings)
+- Resizable and draggable interface.
 
-### ✅ 3.3 Project Structure
+### **3.3. Read Aloud with Word Highlighting**
+- Reads the summary using the Web Speech API (or fallback to backend TTS).
+- Highlights each word as it’s spoken using bounding boxes or inline `<span>` highlights.
+- Word sync based on `SpeechSynthesisUtterance.onboundary`.
+
+### **3.4. Compatibility**
+- Works on:
+  - Chrome
+  - Microsoft Edge
+  - Firefox (polyfill for Web Speech API if needed)
+
+### **3.5. Settings**
+- Playback speed, voice selection, and pitch.
+- Save user preferences to `chrome.storage.sync`.
+
+---
+
+## **4. Technical Architecture**
+
+### **4.1. Frontend (extension/)**
+- **Manifest V3**
+- Content script:
+  - Injects sidebar into YouTube pages.
+  - Detects video URL change (YouTube uses SPA routing).
+- Background service worker:
+  - Handles messaging and API calls.
+- Sidebar HTML + CSS + JS:
+  - UI/UX for summary and TTS controls.
+  - Calls backend for summary.
+  - TTS and word-by-word highlight rendering.
+
+### **4.2. Backend (backend/)**
+- **Express.js API Server**
+  - `/summarize`: Accepts YouTube video ID, fetches transcript via yt-dlp, calls Gemini API to summarize.
+  - `/transcript`: Optional endpoint for raw transcript.
+- **Gemini 2.0 Flash Lite API Integration**
+  - Used to generate AI summary.
+- **yt-dlp Integration**
+  - Fetches subtitles/transcripts (preferably in English).
+  - Fallback to auto-generated if needed.
+
+---
+
+## **5. Project Structure**
+
 ```
 project-root/
-├── extension/
+│
+├── extension/                   # Browser extension frontend
 │   ├── manifest.json
-│   ├── content.js
-│   ├── sidebar.html
-│   ├── sidebar.css
-│   └── sidebar.js
-├── backend/
-│   ├── main.py
-│   ├── utils/
-│   │   ├── yt_subtitles.py
-│   │   └── gemini_api.py
-│   └── requirements.txt
+│   ├── content.js               # Injects UI and manages DOM interactions
+│   ├── sidebar.html             # Sidebar container
+│   ├── sidebar.js               # Handles summary display, TTS
+│   ├── styles.css               # Sidebar styling
+│   └── utils/                   # Utility functions (e.g., storage, debounce)
+│
+├── backend/                     # Backend server
+│   ├── server.js
+│   ├── routes/
+│   │   ├── summarize.js         # Summarization endpoint
+│   │   └── transcript.js        # Transcript fetcher
+│   ├── services/
+│   │   ├── geminiService.js     # Gemini 2.0 Flash Lite wrapper
+│   │   └── ytdlpService.js      # yt-dlp integration
+│   └── .env
+│
+├── README.md
+└── package.json
 ```
 
 ---
 
-## 📦 4. Non-Functional Requirements
-- Response time: Summary generation ≤ 10 seconds.
-- Sidebar UI must be responsive and minimal.
-- Should gracefully handle videos without subtitles (notify the user).
-- TTS voice should default to a natural English voice.
+## **6. User Flow**
+
+1. User visits a YouTube video page.
+2. Content script detects video URL.
+3. Sidebar is injected into the page.
+4. Request is sent to the backend with the video ID.
+5. Backend fetches transcript and generates summary.
+6. Summary is displayed in the sidebar.
+7. User clicks “Read Aloud” → TTS starts and highlights each word as it's spoken.
 
 ---
 
-## 🧪 5. Testing & QA
-- Unit tests for `yt_subtitles.py` and `gemini_api.py`.
-- Manual tests across Chrome, Edge, and Firefox.
-- Edge cases:
-  - Videos without subtitles.
-  - Long videos (handle transcript length via chunking).
+## **7. APIs**
+
+### **Frontend → Backend**
+- `POST /summarize`
+  - `body: { videoId: string }`
+- `GET /transcript/:videoId`
+
+### **Backend → Gemini**
+- `POST /v1/generate`
+  - `prompt: Transcript text`
+  - `model: gemini-2.0-flash-lite`
 
 ---
 
-## 🚀 6. other Enhancements
-- Allow summary export (PDF, Markdown).
-- Add support for multi-language subtitles.
-- Allow choosing between short, medium, and detailed summaries.
-- Add a transcript viewer with jump-to-timestamp.
+## **8. Non-Functional Requirements**
+
+- Responsive, fast-loading sidebar (under 1s for render).
+- Summary returned within ~3s of transcript download.
+- Secure backend with rate limiting.
+- TTS support in both Chrome and Firefox.
+
+---
+
+## **9. Future Enhancements**
+
+- Support multilingual transcripts and summaries.
+- Add "Save Summary" to Notion/Docs.
+- Export as audio (MP3).
+- Summarization styles: Bullet points, TL;DR, Time-stamped.
+
+---
+
+## **10. Milestones**
+
+| Milestone                     | Timeline        |
+|------------------------------|-----------------|
+| Project scaffolding           | Day 1           |
+| Sidebar UI and TTS           | Day 2–3         |
+| Backend APIs (yt-dlp + Gemini)| Day 4–5         |
+| Full integration + testing   | Day 6–7         |
+| Cross-browser packaging      | Day 8           |
+| Deployment and polishing     | Day 9–10        |
+
+---
 
 
 this following is example code for gemeni 2.0 flash lite api
@@ -160,4 +228,4 @@ async function run() {
 
 run();
 
-Use the web search if any help is needed in the implementation of this browser extension. Also use the sequential thinking mcp server wherever possible
+ use the sequential thinking mcp server wherever possible
