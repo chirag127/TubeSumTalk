@@ -188,7 +188,17 @@ class TubeSumTalkSidebar {
             return;
         }
 
-        togglePlayPause(this.summary, this.ttsSettings);
+        // Use the original markdown text stored in the data attribute
+        const summaryElement = this.sidebarElement.querySelector(
+            "#tubesumtalk-summary"
+        );
+        if (summaryElement) {
+            // Pass null as the first parameter since the TTS utility will get the text from the container
+            togglePlayPause(null, this.ttsSettings);
+        } else {
+            // Fallback to using the stored summary
+            togglePlayPause(this.summary, this.ttsSettings);
+        }
     }
 
     // Show settings popup
@@ -397,7 +407,9 @@ class TubeSumTalkSidebar {
 
     // Set summary
     setSummary(summary) {
+        // Store both the original markdown and the parsed HTML
         this.summary = summary;
+        this.originalMarkdown = summary;
 
         const summaryElement = this.sidebarElement.querySelector(
             "#tubesumtalk-summary"
@@ -406,6 +418,9 @@ class TubeSumTalkSidebar {
             // Parse markdown to HTML
             const htmlContent = this.parseMarkdown(summary);
             summaryElement.innerHTML = htmlContent;
+
+            // Store the original markdown as a data attribute for easy access
+            summaryElement.setAttribute("data-original-markdown", summary);
         }
     }
 
@@ -423,13 +438,10 @@ class TubeSumTalkSidebar {
         }
 
         // Replace headers
-        html = html.replace(
-            /^\s*#{1,6}\s+(.+)$/gm,
-            (match, p1, offset, string) => {
-                const level = match.trim().indexOf(" ");
-                return `<h${level}>${p1}</h${level}>`;
-            }
-        );
+        html = html.replace(/^\s*#{1,6}\s+(.+)$/gm, (match, p1) => {
+            const level = match.trim().indexOf(" ");
+            return `<h${level}>${p1}</h${level}>`;
+        });
 
         // Replace bold text
         html = html.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");

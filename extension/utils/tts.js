@@ -7,12 +7,11 @@ let currentUtterance = null;
 let isPlaying = false;
 
 // Speak text with word highlighting
-function speakWithHighlighting(text, options = {}) {
+function speakWithHighlighting(_, options = {}) {
     // Stop any current speech
     stopSpeaking();
 
-    // Split text into words and create spans
-    const words = text.split(" ");
+    // Get the summary container
     const container = document.getElementById("tubesumtalk-summary");
 
     if (!container) {
@@ -20,8 +19,51 @@ function speakWithHighlighting(text, options = {}) {
         return;
     }
 
+    // Store the original HTML content
+    const originalHTML = container.innerHTML;
+
+    // Create a temporary container with the original HTML
+    const tempDiv = document.createElement("div");
+    tempDiv.innerHTML = originalHTML;
+
+    // Extract readable text from HTML while preserving structure
+    // This will convert HTML to plain text but keep the structure for reading
+    let readableText = "";
+    const extractTextFromNode = (node) => {
+        if (node.nodeType === Node.TEXT_NODE) {
+            readableText += node.textContent + " ";
+        } else if (node.nodeType === Node.ELEMENT_NODE) {
+            // Add extra spaces or line breaks for certain elements
+            if (node.tagName === "LI") readableText += "• ";
+            if (
+                node.tagName === "P" ||
+                node.tagName === "LI" ||
+                node.tagName === "H1" ||
+                node.tagName === "H2" ||
+                node.tagName === "H3" ||
+                node.tagName === "H4"
+            ) {
+                Array.from(node.childNodes).forEach(extractTextFromNode);
+                readableText += "\n";
+            } else {
+                Array.from(node.childNodes).forEach(extractTextFromNode);
+            }
+        }
+    };
+
+    // Extract text from the HTML content
+    Array.from(tempDiv.childNodes).forEach(extractTextFromNode);
+
+    // Clean up the text (remove extra spaces, etc.)
+    readableText = readableText.replace(/\s+/g, " ").trim();
+
+    // Create a new container for the word spans
     container.innerHTML = "";
 
+    // Split the readable text into words for highlighting
+    const words = readableText.split(" ").filter((word) => word.trim() !== "");
+
+    // Create spans for each word
     words.forEach((word, index) => {
         const span = document.createElement("span");
         span.textContent = word + " ";
@@ -30,12 +72,12 @@ function speakWithHighlighting(text, options = {}) {
         container.appendChild(span);
     });
 
-    // Extract plain text if HTML content is provided
-    const plainText = text.replace(/<[^>]*>/g, "");
-
-    // Create utterance
-    const utterance = new SpeechSynthesisUtterance(plainText);
+    // Create utterance with the readable text
+    const utterance = new SpeechSynthesisUtterance(readableText);
     currentUtterance = utterance;
+
+    // Store original HTML for restoration later
+    utterance._originalHTML = originalHTML;
 
     // Set voice, rate, pitch from options or defaults
     const voices = window.speechSynthesis.getVoices();
@@ -130,6 +172,12 @@ function speakWithHighlighting(text, options = {}) {
         if (highlighted) {
             highlighted.classList.remove("tubesumtalk-highlighted");
         }
+
+        // Restore the original HTML content
+        const container = document.getElementById("tubesumtalk-summary");
+        if (container && utterance._originalHTML) {
+            container.innerHTML = utterance._originalHTML;
+        }
     };
 
     // Start speaking
@@ -139,6 +187,9 @@ function speakWithHighlighting(text, options = {}) {
 // Stop speaking
 function stopSpeaking() {
     if (currentUtterance) {
+        // Store the original HTML before canceling
+        const originalHTML = currentUtterance._originalHTML;
+
         window.speechSynthesis.cancel();
         isPlaying = false;
         updatePlayPauseButton();
@@ -148,15 +199,24 @@ function stopSpeaking() {
         if (highlighted) {
             highlighted.classList.remove("tubesumtalk-highlighted");
         }
+
+        // Restore the original HTML content
+        if (originalHTML) {
+            const container = document.getElementById("tubesumtalk-summary");
+            if (container) {
+                container.innerHTML = originalHTML;
+            }
+        }
     }
 }
 
 // Toggle play/pause
-function togglePlayPause(text, options = {}) {
+function togglePlayPause(_, options = {}) {
     if (isPlaying) {
         stopSpeaking();
     } else {
-        speakWithHighlighting(text, options);
+        // We don't need to pass the text as the function will get it from the container
+        speakWithHighlighting(null, options);
     }
 }
 

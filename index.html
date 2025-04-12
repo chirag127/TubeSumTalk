@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TubeSumTalk - YouTube Video Summary & Chat Extension</title>
+    <style>
+        :root {
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #252525;
+            --text-primary: #ffffff;
+            --text-secondary: #b3b3b3;
+            --accent-color: #7c4dff;
+            --hover-color: #9969ff;
+            --max-width: 1200px;
+            --spacing: 2rem;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: var(--max-width);
+            margin: 0 auto;
+            padding: var(--spacing);
+        }
+
+        header {
+            text-align: center;
+            padding: 4rem 1rem;
+            background-color: var(--bg-secondary);
+        }
+
+        .logo {
+            width: 128px;
+            height: 128px;
+            margin-bottom: 1rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--accent-color);
+        }
+
+        .tagline {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 0.8rem 1.5rem;
+            background-color: var(--accent-color);
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .button:hover {
+            background-color: var(--hover-color);
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+
+        .feature-card {
+            background-color: var(--bg-secondary);
+            padding: 2rem;
+            border-radius: 10px;
+            transition: transform 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+
+        section {
+            margin: 4rem 0;
+        }
+
+        h2 {
+            color: var(--accent-color);
+            margin-bottom: 1.5rem;
+        }
+
+        footer {
+            background-color: var(--bg-secondary);
+            padding: 2rem;
+            text-align: center;
+            margin-top: 4rem;
+        }
+
+        @media (max-width: 768px) {
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <img src="icon128.png" alt="TubeSumTalk Logo" class="logo">
+        <h1>TubeSumTalk</h1>
+        <p class="tagline">Transform YouTube videos into concise summaries and engage in AI-powered conversations</p>
+        <div class="cta-buttons">
+            <a href="https://github.com/your-username/TubeSumTalk" class="button">View on GitHub</a>
+            <a href="privacy-policy.html" class="button" target="_blank">Privacy Policy</a>
+        </div>
+    </header>
+
+    <main class="container">
+        <section id="about">
+            <h2>About TubeSumTalk</h2>
+            <p>TubeSumTalk is a powerful browser extension that enhances your YouTube viewing experience by providing instant video summaries and enabling AI-powered conversations about the content. Save time and gain deeper insights from your favorite videos.</p>
+        </section>
+
+        <section id="features">
+            <h2>Key Features</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <h3>Smart Summaries</h3>
+                    <p>Generate concise summaries of YouTube videos in various formats: bullet points, brief overviews, or detailed analyses.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>AI Chat</h3>
+                    <p>Engage in meaningful conversations about video content with our advanced AI powered by Google's Gemini model.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Customizable</h3>
+                    <p>Choose your preferred summary length and style to match your reading preferences.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Easy to Use</h3>
+                    <p>Seamlessly integrated into your YouTube experience with a clean and intuitive interface.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="installation">
+            <h2>Installation Instructions</h2>
+            <ol>
+                <li>Clone the repository or download the latest release from GitHub</li>
+                <li>Open your browser's extension management page</li>
+                <li>Enable Developer Mode</li>
+                <li>Click "Load unpacked" and select the extension directory</li>
+                <li>Configure your API keys in the extension settings</li>
+            </ol>
+        </section>
+
+        <section id="how-to-use">
+            <h2>How to Use</h2>
+            <ol>
+                <li>Navigate to any YouTube video</li>
+                <li>Click the TubeSumTalk extension icon</li>
+                <li>Choose your desired summary type and length</li>
+                <li>Get instant summaries and start chatting about the content</li>
+            </ol>
+        </section>
+
+        <section id="tech-stack">
+            <h2>Technology Stack</h2>
+            <ul>
+                <li>JavaScript (ES6+)</li>
+                <li>Chrome Extension APIs</li>
+                <li>Google's Gemini AI Model</li>
+                <li>Node.js Backend</li>
+                <li>FastAPI & Flask</li>
+            </ul>
+        </section>
+    </main>
+
+    <footer>
+        <p>© 2025 TubeSumTalk. All rights reserved.</p>
+        <div class="cta-buttons">
+            <a href="privacy-policy.html" class="button" target="_blank">Privacy Policy</a>
+            <a href="https://github.com/your-username/TubeSumTalk" class="button">GitHub</a>
+        </div>
+    </footer>
+</body>
+</html>
