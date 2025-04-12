@@ -30,7 +30,7 @@ The **YouTube Video Summarizer + Read Aloud Sidebar Extension** is a browser ext
 
 ### **3.1. Auto Summary Generation**
 - Automatically detect when a user is on a YouTube video page.
-- Extract the transcript using **yt-dlp** in the backend.
+- Extract the transcript and video title and send it to the backend for summarization.
 - Send transcript to **Gemini 2.0 Flash Lite** via backend for summarization.
 - Display the summary in the extension's sidebar.
 
@@ -76,13 +76,9 @@ The **YouTube Video Summarizer + Read Aloud Sidebar Extension** is a browser ext
 
 ### **4.2. Backend (backend/)**
 - **Express.js API Server**
-  - `/summarize`: Accepts YouTube video ID, fetches transcript via yt-dlp, calls Gemini API to summarize.
-  - `/transcript`: Optional endpoint for raw transcript.
+  - `/summarize`: Accepts YouTube video ID and video title and text(transcript) calls Gemini API to summarize.
 - **Gemini 2.0 Flash Lite API Integration**
   - Used to generate AI summary.
-- **yt-dlp Integration**
-  - Fetches subtitles/transcripts (preferably in English).
-  - Fallback to auto-generated if needed.
 
 ---
 
@@ -103,10 +99,8 @@ project-root/
 │   ├── server.js
 │   ├── routes/
 │   │   ├── summarize.js         # Summarization endpoint
-│   │   └── transcript.js        # Transcript fetcher
 │   ├── services/
 │   │   ├── geminiService.js     # Gemini 2.0 Flash Lite wrapper
-│   │   └── ytdlpService.js      # yt-dlp integration
 │   └── .env
 │
 ├── README.md
@@ -165,7 +159,7 @@ project-root/
 |------------------------------|-----------------|
 | Project scaffolding           | Day 1           |
 | Sidebar UI and TTS           | Day 2–3         |
-| Backend APIs (yt-dlp + Gemini)| Day 4–5         |
+| Backend APIs (Gemini)| Day 4–5         |
 | Full integration + testing   | Day 6–7         |
 | Cross-browser packaging      | Day 8           |
 | Deployment and polishing     | Day 9–10        |
