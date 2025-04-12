@@ -1,9 +1,9 @@
-Here's the full **Product Requirements Document (PRD)** for your **YouTube Video Summarizer + Read Aloud Sidebar Extension**:
+Here's the full **Product Requirements Document (PRD)** for your **YouTube Video Summarizer + Read Aloud right colomn Extension**:
 
 ---
 
 # **Product Requirements Document (PRD)**
-**Product Name:** YouTube Video Summarizer + Read Aloud Sidebar
+**Product Name:** YouTube Video Summarizer + Read Aloud right colomn
 **Platform:** Browser Extension (Chrome, Edge, Firefox)
 **Owner:** chirag127
 **Last Updated:** April 11, 2025
@@ -12,14 +12,14 @@ Here's the full **Product Requirements Document (PRD)** for your **YouTube Video
 
 ## **1. Overview**
 
-The **YouTube Video Summarizer + Read Aloud Sidebar Extension** is a browser extension that automatically summarizes YouTube videos and displays the summary in a sidebar on the video page. Additionally, it offers a "Read Aloud" feature that speaks the summary out loud with real-time, word-by-word highlighting.
+The **YouTube Video Summarizer + Read Aloud right colomn Extension** is a browser extension that automatically summarizes YouTube videos and displays the summary in a right colomn on the video page. Additionally, it offers a "Read Aloud" feature that speaks the summary out loud with real-time, word-by-word highlighting.
 
 ---
 
 ## **2. Goals**
 
 - Summarize YouTube videos using AI.
-- Display summary in a non-intrusive sidebar.
+- Display summary in a non-intrusive right colomn.
 - Provide a Read Aloud feature with word-level highlighting.
 - Support multiple browsers: Chrome, Edge, Firefox.
 - Maintain fast, smooth UX with secure AI processing.
@@ -32,10 +32,10 @@ The **YouTube Video Summarizer + Read Aloud Sidebar Extension** is a browser ext
 - Automatically detect when a user is on a YouTube video page.
 - Extract the transcript and video title and send it to the backend for summarization.
 - Send transcript to **Gemini 2.0 Flash Lite** via backend for summarization.
-- Display the summary in the extension's sidebar.
+- Display the summary in the extension's right colomn.
 
-### **3.2. Sidebar UI**
-- Toggleable sidebar on the right of the YouTube video.
+### **3.2. right colomn UI**
+- Toggleable right colomn on the right of the YouTube video.
 - Displays:
   - Title of video
   - AI-generated summary
@@ -65,11 +65,11 @@ The **YouTube Video Summarizer + Read Aloud Sidebar Extension** is a browser ext
 ### **4.1. Frontend (extension/)**
 - **Manifest V3**
 - Content script:
-  - Injects sidebar into YouTube pages.
+  - Injects right colomn into YouTube pages.
   - Detects video URL change (YouTube uses SPA routing).
 - Background service worker:
   - Handles messaging and API calls.
-- Sidebar HTML + CSS + JS:
+- right colomn HTML + CSS + JS:
   - UI/UX for summary and TTS controls.
   - Calls backend for summary.
   - TTS and word-by-word highlight rendering.
@@ -107,10 +107,10 @@ make the code as modular and reusable as possible
 
 1. User visits a YouTube video page.
 2. Content script detects video URL.
-3. Sidebar is injected into the page.
+3. right colomn is injected into the page.
 4. Request is sent to the backend with the video ID.
 5. Backend fetches transcript and generates summary.
-6. Summary is displayed in the sidebar.
+6. Summary is displayed in the right colomn.
 7. User clicks “Read Aloud” → TTS starts and highlights each word as it's spoken.
 8. there will be a pop up for the user to select the voice and speed of the TTS.
 
@@ -131,7 +131,7 @@ make the code as modular and reusable as possible
 
 ## **8. Non-Functional Requirements**
 
-- Responsive, fast-loading sidebar (under 1s for render).
+- Responsive, fast-loading right colomn (under 1s for render).
 - Summary returned within ~3s of transcript download.
 - Secure backend with rate limiting.
 - TTS support in both Chrome and Firefox.
@@ -152,7 +152,7 @@ make the code as modular and reusable as possible
 | Milestone                     | Timeline        |
 |------------------------------|-----------------|
 | Project scaffolding           | Day 1           |
-| Sidebar UI and TTS           | Day 2–3         |
+| right colomn UI and TTS           | Day 2–3         |
 | Backend APIs (Gemini)| Day 4–5         |
 | Full integration + testing   | Day 6–7         |
 | Cross-browser packaging      | Day 8           |
