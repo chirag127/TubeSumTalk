@@ -13,6 +13,10 @@ function speakWithHighlighting(_, options = {}) {
 
     // Get the summary container
     const container = document.getElementById("tubesumtalk-summary");
+    // Get the scrollable container (summary-container)
+    const scrollContainer =
+        options.scrollContainer ||
+        container.closest(".tubesumtalk-summary-container");
 
     if (!container) {
         console.error("Summary container not found");
@@ -148,11 +152,33 @@ function speakWithHighlighting(_, options = {}) {
             if (wordSpan) {
                 wordSpan.classList.add("tubesumtalk-highlighted");
 
-                // Scroll to the word if needed
-                wordSpan.scrollIntoView({
-                    behavior: "smooth",
-                    block: "center",
-                });
+                // Scroll to the word within the container if needed
+                if (scrollContainer) {
+                    // Calculate position for scrolling within container
+                    const containerRect =
+                        scrollContainer.getBoundingClientRect();
+                    const wordRect = wordSpan.getBoundingClientRect();
+
+                    // Check if word is outside visible area of container
+                    const isAbove = wordRect.top < containerRect.top;
+                    const isBelow = wordRect.bottom > containerRect.bottom;
+
+                    if (isAbove || isBelow) {
+                        // Calculate the scroll position to center the word
+                        const scrollTop =
+                            wordRect.top +
+                            scrollContainer.scrollTop -
+                            containerRect.top -
+                            containerRect.height / 2 +
+                            wordRect.height / 2;
+
+                        // Smooth scroll to the word
+                        scrollContainer.scrollTo({
+                            top: scrollTop,
+                            behavior: "smooth",
+                        });
+                    }
+                }
             }
         }
     };

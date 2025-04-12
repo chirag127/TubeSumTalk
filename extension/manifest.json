@@ -35,11 +35,11 @@
       "js": [
         "utils/transcript.js",
         "utils/tts.js",
-        "content_scripts/sidebar.js",
+        "content_scripts/widget.js",
         "content_scripts/content.js"
       ],
       "css": [
-        "content_scripts/sidebar.css"
+        "content_scripts/widget.css"
       ]
     }
   ],

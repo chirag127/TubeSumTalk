@@ -7,7 +7,7 @@
 const YOUTUBE_VIDEO_REGEX = /^https:\/\/www\.youtube\.com\/watch\?v=.+/;
 
 // State
-let sidebar = null;
+let widget = null;
 let currentVideoId = null;
 let isProcessing = false;
 
@@ -35,23 +35,27 @@ async function init() {
     }
 
     // If we've already processed this video, don't do it again
-    if (videoDetails.videoId === currentVideoId && sidebar) {
+    if (videoDetails.videoId === currentVideoId && widget) {
         return;
     }
 
     // Update current video ID
     currentVideoId = videoDetails.videoId;
 
-    // If sidebar doesn't exist, create it
-    if (!sidebar) {
-        sidebar = await new TubeSumTalkSidebar().init();
+    // If widget doesn't exist, create it
+    if (!widget) {
+        widget = await new TubeSumTalkWidget().init();
+        if (!widget) {
+            console.error("Failed to initialize widget");
+            return;
+        }
     }
 
-    // Set video details in sidebar
-    sidebar.setVideoDetails(videoDetails);
+    // Set video details in widget
+    widget.setVideoDetails(videoDetails);
 
     // Show loading state
-    sidebar.showLoading();
+    widget.showLoading();
 
     // Prevent multiple simultaneous processing
     if (isProcessing) {
@@ -65,7 +69,7 @@ async function init() {
         const languages = await getTranscriptLanguages();
 
         if (!languages || languages.length === 0) {
-            sidebar.showError("No transcript available for this video.");
+            widget.showError("No transcript available for this video.");
             isProcessing = false;
             return;
         }
@@ -78,7 +82,7 @@ async function init() {
         const transcript = await getTranscript(defaultLanguage.url);
 
         if (!transcript || transcript.length === 0) {
-            sidebar.showError(
+            widget.showError(
                 "Failed to get transcript. Please try another video."
             );
             isProcessing = false;
@@ -114,11 +118,11 @@ async function init() {
                         isProcessing = false;
 
                         if (response && response.success) {
-                            // Display summary in sidebar
-                            sidebar.setSummary(response.summary);
+                            // Display summary in widget
+                            widget.setSummary(response.summary);
                         } else {
                             // Display error
-                            sidebar.showError(
+                            widget.showError(
                                 response?.error ||
                                     "Failed to generate summary. Please try again."
                             );
@@ -129,7 +133,7 @@ async function init() {
         );
     } catch (error) {
         console.error("Error processing video:", error);
-        sidebar.showError("An error occurred while processing the video.");
+        widget.showError("An error occurred while processing the video.");
         isProcessing = false;
     }
 }
@@ -146,8 +150,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         message.action === "updateSummary" &&
         message.videoId === currentVideoId
     ) {
-        if (sidebar) {
-            sidebar.setSummary(message.summary);
+        if (widget) {
+            widget.setSummary(message.summary);
         }
         sendResponse({ success: true });
     }
