@@ -110,6 +110,7 @@ make the code as modular and reusable as possible
 5. Backend fetches transcript and generates summary.
 6. Summary is displayed in the sidebar.
 7. User clicks “Read Aloud” → TTS starts and highlights each word as it's spoken.
+8. there will be a pop up for the user to select the voice and speed of the TTS.
 
 ---
 
