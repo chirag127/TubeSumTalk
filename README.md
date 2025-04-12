@@ -19,26 +19,29 @@ project-root/
 │
 ├── extension/                   # Browser extension frontend
 │   ├── manifest.json            # Extension configuration
-│   ├── background.js            # Background service worker
-│   ├── content.js               # Injects UI and manages DOM interactions
-│   ├── sidebar.html             # Sidebar container
-│   ├── sidebar.js               # Handles summary display, TTS
-│   ├── styles.css               # Sidebar styling
-│   └── icons/                   # Extension icons
+│   ├── icons/                   # Extension icons
+│   ├── content_scripts/         # Content scripts for YouTube pages
+│   │   ├── content.js           # Main content script
+│   │   ├── sidebar.js           # Sidebar functionality
+│   │   └── sidebar.css          # Sidebar styling
+│   ├── background/              # Background service worker
+│   │   └── service-worker.js    # Handles API communication
+│   ├── popup/                   # Extension popup
+│   │   ├── popup.html           # Popup HTML
+│   │   ├── popup.js             # Popup functionality
+│   │   └── popup.css            # Popup styling
+│   └── utils/                   # Utility functions
+│       ├── transcript.js        # Transcript extraction
+│       └── tts.js               # Text-to-speech functionality
 │
 ├── backend/                     # Backend server
 │   ├── server.js                # Express.js server
-│   ├── routes/
-│   │   └── summarize.js         # Summarization endpoint
-│   ├── services/
-│   │   └── geminiService.js     # Gemini 2.0 Flash Lite wrapper
+│   ├── api/                     # API endpoints and Gemini integration
+│   │   └── gemini.js            # Gemini 2.0 Flash Lite wrapper
+│   ├── package.json             # Node.js dependencies
 │   └── .env                     # Environment variables
 │
-├── scripts/                     # Utility scripts
-│   └── generate-icons.js        # Generate extension icons from SVG
-│
 ├── README.md                    # Project documentation
-└── package.json                 # Project configuration
 ```
 
 ## Setup Instructions
@@ -104,14 +107,26 @@ project-root/
 
 ### Backend Development
 
-The backend is built with Express.js and uses the Gemini 2.0 Flash Lite API for summarization. To run the backend in development mode with auto-restart:
+The backend is built with Express.js and Node.js, and integrates with the Gemini 2.0 Flash Lite API for summarization. To run the backend in development mode with auto-restart:
 
 ```
 cd backend
 npm run dev
 ```
 
+To modify the backend:
+
+1. Update the API endpoints in `backend/server.js`
+2. Modify the Gemini integration in `backend/api/gemini.js`
+3. Restart the server to apply changes
+
 ### Extension Development
+
+The extension is built with vanilla JavaScript and follows the Manifest V3 specification. To modify the extension:
+
+1. Update the content scripts in `extension/content_scripts/`
+2. Modify the background service worker in `extension/background/`
+3. Update the popup UI in `extension/popup/`
 
 After making changes to the extension, you'll need to reload it in your browser:
 
