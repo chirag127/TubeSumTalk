@@ -12,29 +12,29 @@
       <img src="../icons/icon48.png" alt="TubeSumTalk">
       <h1>TubeSumTalk</h1>
     </div>
-    
+
     <p class="popup-description">
       Summarize YouTube videos and read summaries aloud with word highlighting.
     </p>
-    
+
     <div class="popup-section">
       <h2>TTS Settings</h2>
-      
+
       <div class="setting">
         <label for="tts-voice">Voice:</label>
         <select id="tts-voice" class="voice-select">
           <option value="default">Default Voice</option>
         </select>
       </div>
-      
+
       <div class="setting">
         <label for="tts-speed">Speed:</label>
         <div class="slider-container">
-          <input type="range" id="tts-speed" class="slider" min="0.5" max="2" step="0.1" value="1">
+          <input type="range" id="tts-speed" class="slider" min="0.5" max="16" step="0.1" value="1">
           <span id="tts-speed-value">1.0×</span>
         </div>
       </div>
-      
+
       <div class="setting">
         <label for="tts-pitch">Pitch:</label>
         <div class="slider-container">
@@ -42,16 +42,16 @@
           <span id="tts-pitch-value">1.0</span>
         </div>
       </div>
-      
+
       <button id="save-settings" class="save-button">Save Settings</button>
     </div>
-    
+
     <div class="popup-footer">
       <p>Created by chirag127</p>
       <p>Version 1.0.0</p>
     </div>
   </div>
-  
+
   <script src="popup.js"></script>
 </body>
 </html>

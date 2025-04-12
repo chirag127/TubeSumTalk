@@ -113,6 +113,8 @@ async function summarizeVideo(videoId, transcript, title) {
 
         const data = await response.json();
         console.log("Received summary from API");
+
+        // Return the summary as is - it will be parsed as markdown in the sidebar
         return data.summary;
     } catch (error) {
         console.error("Error calling API:", error);
