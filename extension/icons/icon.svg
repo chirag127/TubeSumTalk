@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="128" height="128" rx="24" fill="#4285F4"/>
+  
+  <!-- YouTube play button -->
+  <rect x="24" y="32" width="80" height="48" rx="8" fill="white"/>
+  <path d="M64 56L52 48V64L64 56ZM76 48L64 56L76 64V48Z" fill="#FF0000"/>
+  
+  <!-- Speech bubble with text -->
+  <rect x="32" y="88" width="64" height="24" rx="12" fill="#34A853"/>
+  
+  <!-- Text lines -->
+  <rect x="40" y="96" width="48" height="2" rx="1" fill="white"/>
+  <rect x="40" y="102" width="36" height="2" rx="1" fill="white"/>
+  
+  <!-- Sound waves -->
+  <path d="M88 88C92 84 94 80 94 76C94 72 92 68 88 64" stroke="white" stroke-width="3" stroke-linecap="round"/>
+  <path d="M96 92C102 86 104 80 104 76C104 72 102 66 96 60" stroke="white" stroke-width="3" stroke-linecap="round"/>
+</svg>

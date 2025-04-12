@@ -1,17 +1,16 @@
-# YouTube Video Summarizer + Read Aloud Sidebar Extension
+# TubeSumTalk
 
 ## Overview
 
-A browser extension for Chrome, Edge, and Firefox that summarizes YouTube videos using AI and displays the summary in a sidebar. Includes a "Read Aloud" feature with word-by-word highlighting.
+TubeSumTalk is a browser extension that automatically summarizes YouTube videos and displays the summary in a sidebar. It also features a "Read Aloud" function that speaks the summary with real-time word highlighting.
 
 ## Features
 
-- Auto-detects YouTube video pages and fetches video transcript.
-- Summarizes video using Gemini 2.0 Flash Lite via backend.
-- Sidebar UI with summary, TTS controls, and settings.
-- Read Aloud with real-time word highlighting.
-- Settings for TTS (voice, speed, pitch) saved in browser sync storage.
-- Works on Chrome, Edge, and Firefox.
+-   **Auto-detection**: Automatically detects when you're watching a YouTube video
+-   **AI Summarization**: Uses Gemini 2.0 Flash Lite to generate concise summaries
+-   **Read Aloud**: Text-to-speech with real-time word highlighting
+-   **Customizable**: Adjust reading speed and voice
+-   **Cross-browser**: Works on Chrome, Edge, and Firefox
 
 ## Project Structure
 
@@ -19,49 +18,105 @@ A browser extension for Chrome, Edge, and Firefox that summarizes YouTube videos
 project-root/
 │
 ├── extension/                   # Browser extension frontend
-│   ├── manifest.json
+│   ├── manifest.json            # Extension configuration
+│   ├── background.js            # Background service worker
 │   ├── content.js               # Injects UI and manages DOM interactions
 │   ├── sidebar.html             # Sidebar container
 │   ├── sidebar.js               # Handles summary display, TTS
 │   ├── styles.css               # Sidebar styling
-│   └── utils/                   # Utility functions (e.g., storage, debounce)
+│   └── icons/                   # Extension icons
 │
 ├── backend/                     # Backend server
-│   ├── server.js
+│   ├── server.js                # Express.js server
 │   ├── routes/
-│   │   ├── summarize.js         # Summarization endpoint
-│   │   └── transcript.js        # Transcript fetcher
+│   │   └── summarize.js         # Summarization endpoint
 │   ├── services/
-│   │   ├── geminiService.js     # Gemini 2.0 Flash Lite wrapper
-│   │   └── ytdlpService.js      # yt-dlp integration
-│   └── .env
+│   │   └── geminiService.js     # Gemini 2.0 Flash Lite wrapper
+│   └── .env                     # Environment variables
 │
-├── README.md
-└── package.json
+├── scripts/                     # Utility scripts
+│   └── generate-icons.js        # Generate extension icons from SVG
+│
+├── README.md                    # Project documentation
+└── package.json                 # Project configuration
 ```
 
-## Setup
+## Setup Instructions
 
-### Backend
+### Backend Setup
 
-1. `cd backend`
-2. `npm install`
-3. Create `.env` with your Gemini API key:
-   ```
-   GEMINI_API_KEY=your_api_key_here
-   ```
-4. Start server: `node server.js`
+1. Navigate to the backend directory:
 
-### Extension
+    ```
+    cd backend
+    ```
 
-1. Load `extension/` as an unpacked extension in your browser.
-2. Configure backend API URL in `extension/utils/config.js` if needed.
+2. Install dependencies:
+
+    ```
+    npm install
+    ```
+
+3. Create a `.env` file from the example:
+
+    ```
+    cp .env.example .env
+    ```
+
+4. Add your Gemini API key to the `.env` file:
+
+    ```
+    GEMINI_API_KEY=your_api_key_here
+    ```
+
+5. Start the backend server:
+    ```
+    npm start
+    ```
+
+### Extension Setup
+
+1. Navigate to the extension directory:
+
+    ```
+    cd extension
+    ```
+
+2. Generate the extension icons:
+
+    ```
+    npm run build
+    ```
+
+3. Load the extension in your browser:
+    - Chrome/Edge: Go to `chrome://extensions/`, enable "Developer mode", click "Load unpacked", and select the `extension` folder
+    - Firefox: Go to `about:debugging#/runtime/this-firefox`, click "Load Temporary Add-on", and select any file in the `extension` folder
 
 ## Usage
 
-- Visit any YouTube video page.
-- Click the extension icon or wait for the sidebar to appear.
-- View the summary and use the Read Aloud feature.
+1. Visit any YouTube video page
+2. The TubeSumTalk sidebar will automatically appear on the right side
+3. The extension will extract the video transcript and generate a summary
+4. Click the "Read Aloud" button to have the summary read to you with word highlighting
+5. Adjust the reading speed and voice using the controls at the bottom of the sidebar
+
+## Development
+
+### Backend Development
+
+The backend is built with Express.js and uses the Gemini 2.0 Flash Lite API for summarization. To run the backend in development mode with auto-restart:
+
+```
+cd backend
+npm run dev
+```
+
+### Extension Development
+
+After making changes to the extension, you'll need to reload it in your browser:
+
+-   Chrome/Edge: Go to the extensions page and click the refresh icon on the extension
+-   Firefox: Go to the debugging page, click "Reload" on the extension
 
 ## License
 

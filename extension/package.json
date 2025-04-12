@@ -1,0 +1,10 @@
+{
+  "name": "tubesumtalk-extension",
+  "version": "1.0.0",
+  "description": "Browser extension for TubeSumTalk YouTube video summarizer",
+  "scripts": {
+    "build": "node ../scripts/generate-icons.js"
+  },
+  "author": "chirag127",
+  "license": "MIT"
+}

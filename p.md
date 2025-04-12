@@ -125,12 +125,9 @@ project-root/
 
 ### **Frontend → Backend**
 - `POST /summarize`
-  - `body: { videoId: string }`
-- `GET /transcript/:videoId`
-
-### **Backend → Gemini**
+  - `body: { videoId: string, transcript: string, title: string }`
 - `POST /v1/generate`
-  - `prompt: Transcript text`
+  - `prompt: { transcript: string, title: string }`
   - `model: gemini-2.0-flash-lite`
 
 ---
