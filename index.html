@@ -3,17 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TubeSumTalk - YouTube Video Summary & Chat Extension</title>
+    <title>TubeSumTalk - YouTube Video Summarizer</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --bg-primary: #1a1a1a;
-            --bg-secondary: #252525;
+            --primary-color: #cc0000;
+            --primary-hover: #aa0000;
+            --secondary-color: #065fd4;
+            --secondary-hover: #0b57d0;
+            --bg-dark: #121212;
+            --bg-card: #1e1e1e;
             --text-primary: #ffffff;
-            --text-secondary: #b3b3b3;
-            --accent-color: #7c4dff;
-            --hover-color: #9969ff;
+            --text-secondary: #b0b0b0;
+            --border-color: #333333;
+            --spacing-sm: 0.5rem;
+            --spacing-md: 1rem;
+            --spacing-lg: 2rem;
+            --spacing-xl: 3rem;
+            --border-radius: 8px;
+            --transition: all 0.3s ease;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             --max-width: 1200px;
-            --spacing: 2rem;
         }
 
         * {
@@ -23,181 +33,518 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background-color: var(--bg-primary);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-dark);
             color: var(--text-primary);
             line-height: 1.6;
+        }
+
+        a {
+            color: var(--secondary-color);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        a:hover {
+            color: var(--secondary-hover);
         }
 
         .container {
             max-width: var(--max-width);
             margin: 0 auto;
-            padding: var(--spacing);
+            padding: 0 var(--spacing-md);
         }
 
-        header {
+        .btn {
+            display: inline-block;
+            padding: 0.8rem 1.5rem;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
             text-align: center;
-            padding: 4rem 1rem;
-            background-color: var(--bg-secondary);
+            border: none;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: var(--text-primary);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+            color: var(--text-primary);
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary-color);
+            color: var(--text-primary);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--secondary-hover);
+            color: var(--text-primary);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 2px solid var(--secondary-color);
+            color: var(--secondary-color);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--secondary-color);
+            color: var(--text-primary);
+        }
+
+        /* Header */
+        header {
+            padding: var(--spacing-xl) 0;
+            text-align: center;
+            background-color: var(--bg-dark);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 2;
         }
 
         .logo {
-            width: 128px;
-            height: 128px;
-            margin-bottom: 1rem;
+            width: 120px;
+            height: 120px;
+            margin-bottom: var(--spacing-md);
+            animation: pulse 2s infinite alternate;
         }
 
-        h1 {
+        @keyframes pulse {
+            from {
+                transform: scale(1);
+            }
+            to {
+                transform: scale(1.05);
+            }
+        }
+
+        .header-title {
             font-size: 2.5rem;
-            margin-bottom: 1rem;
-            color: var(--accent-color);
+            margin-bottom: var(--spacing-sm);
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
-        .tagline {
+        .header-tagline {
             font-size: 1.2rem;
             color: var(--text-secondary);
-            margin-bottom: 2rem;
+            margin-bottom: var(--spacing-lg);
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
-        .cta-buttons {
+        .header-buttons {
             display: flex;
-            gap: 1rem;
             justify-content: center;
-            margin-top: 2rem;
+            gap: var(--spacing-md);
+            flex-wrap: wrap;
         }
 
-        .button {
-            display: inline-block;
-            padding: 0.8rem 1.5rem;
-            background-color: var(--accent-color);
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            transition: background-color 0.3s ease;
+        /* Sections */
+        section {
+            padding: var(--spacing-xl) 0;
+            border-bottom: 1px solid var(--border-color);
         }
 
-        .button:hover {
-            background-color: var(--hover-color);
+        .section-title {
+            text-align: center;
+            margin-bottom: var(--spacing-lg);
+            font-size: 2rem;
+            position: relative;
+            padding-bottom: var(--spacing-sm);
         }
 
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+        }
+
+        /* About Section */
+        .about-content {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        /* Features Section */
         .features-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 2rem;
-            margin: 3rem 0;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: var(--spacing-lg);
+            margin-top: var(--spacing-lg);
         }
 
         .feature-card {
-            background-color: var(--bg-secondary);
-            padding: 2rem;
-            border-radius: 10px;
-            transition: transform 0.3s ease;
+            background-color: var(--bg-card);
+            border-radius: var(--border-radius);
+            padding: var(--spacing-lg);
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            border: 1px solid var(--border-color);
         }
 
         .feature-card:hover {
             transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            border-color: var(--secondary-color);
         }
 
-        section {
-            margin: 4rem 0;
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: var(--spacing-md);
+            color: var(--secondary-color);
         }
 
-        h2 {
-            color: var(--accent-color);
-            margin-bottom: 1.5rem;
+        .feature-title {
+            font-size: 1.3rem;
+            margin-bottom: var(--spacing-sm);
         }
 
-        footer {
-            background-color: var(--bg-secondary);
-            padding: 2rem;
+        .feature-description {
+            color: var(--text-secondary);
+        }
+
+        /* Installation Section */
+        .installation-steps {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .step {
+            margin-bottom: var(--spacing-md);
+            padding: var(--spacing-md);
+            background-color: var(--bg-card);
+            border-radius: var(--border-radius);
+            border-left: 4px solid var(--secondary-color);
+        }
+
+        .step-number {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            background-color: var(--secondary-color);
+            color: var(--text-primary);
+            border-radius: 50%;
             text-align: center;
-            margin-top: 4rem;
+            line-height: 30px;
+            margin-right: var(--spacing-sm);
         }
 
+        /* How to Use Section */
+        .usage-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .usage-content ul {
+            list-style-type: none;
+            padding-left: var(--spacing-md);
+        }
+
+        .usage-content li {
+            margin-bottom: var(--spacing-sm);
+            position: relative;
+        }
+
+        .usage-content li::before {
+            content: '→';
+            color: var(--secondary-color);
+            position: absolute;
+            left: -20px;
+        }
+
+        /* Technology Stack */
+        .tech-stack {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: var(--spacing-md);
+            margin-top: var(--spacing-lg);
+        }
+
+        .tech-item {
+            background-color: var(--bg-card);
+            border-radius: var(--border-radius);
+            padding: var(--spacing-sm) var(--spacing-md);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            transition: var(--transition);
+        }
+
+        .tech-item:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow);
+        }
+
+        .tech-icon {
+            font-size: 1.5rem;
+            color: var(--secondary-color);
+        }
+
+        /* Footer */
+        footer {
+            padding: var(--spacing-lg) 0;
+            text-align: center;
+            background-color: var(--bg-card);
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
+            flex-wrap: wrap;
+        }
+
+        .footer-link {
+            color: var(--text-secondary);
+            transition: var(--transition);
+        }
+
+        .footer-link:hover {
+            color: var(--text-primary);
+        }
+
+        .copyright {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Responsive */
         @media (max-width: 768px) {
+            .header-title {
+                font-size: 2rem;
+            }
+
+            .header-tagline {
+                font-size: 1rem;
+            }
+
+            .section-title {
+                font-size: 1.8rem;
+            }
+
             .features-grid {
                 grid-template-columns: 1fr;
+            }
+
+            .header-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .btn {
+                width: 100%;
+                max-width: 300px;
             }
         }
     </style>
 </head>
 <body>
     <header>
-        <img src="icon128.png" alt="TubeSumTalk Logo" class="logo">
-        <h1>TubeSumTalk</h1>
-        <p class="tagline">Transform YouTube videos into concise summaries and engage in AI-powered conversations</p>
-        <div class="cta-buttons">
-            <a href="https://github.com/your-username/TubeSumTalk" class="button">View on GitHub</a>
-            <a href="privacy-policy.html" class="button" target="_blank">Privacy Policy</a>
+        <div class="container header-content">
+            <img src="https://raw.githubusercontent.com/chirag127/TubeSumTalk/main/extension/icons/icon128.png" alt="TubeSumTalk Logo" class="logo">
+            <h1 class="header-title">TubeSumTalk</h1>
+            <p class="header-tagline">Summarize YouTube videos and listen to summaries with word-by-word highlighting</p>
+            <div class="header-buttons">
+                <a href="https://github.com/chirag127/TubeSumTalk" class="btn btn-primary" target="_blank">
+                    <i class="fab fa-github"></i> GitHub Repository
+                </a>
+                <a href="privacy-policy.html" class="btn btn-outline" target="_blank">
+                    <i class="fas fa-shield-alt"></i> Privacy Policy
+                </a>
+            </div>
         </div>
     </header>
 
-    <main class="container">
-        <section id="about">
-            <h2>About TubeSumTalk</h2>
-            <p>TubeSumTalk is a powerful browser extension that enhances your YouTube viewing experience by providing instant video summaries and enabling AI-powered conversations about the content. Save time and gain deeper insights from your favorite videos.</p>
-        </section>
+    <section id="about">
+        <div class="container">
+            <h2 class="section-title">About TubeSumTalk</h2>
+            <div class="about-content">
+                <p>TubeSumTalk is a browser extension that automatically summarizes YouTube videos and displays the summary in a sidebar on the video page. It uses advanced AI technology to extract the key points from video transcripts, saving you time and helping you decide if a video is worth watching in full.</p>
+                <p>Additionally, it offers a "Read Aloud" feature that speaks the summary out loud with real-time, word-by-word highlighting, making it easier to follow along and comprehend the content.</p>
+            </div>
+        </div>
+    </section>
 
-        <section id="features">
-            <h2>Key Features</h2>
+    <section id="features">
+        <div class="container">
+            <h2 class="section-title">Key Features</h2>
             <div class="features-grid">
                 <div class="feature-card">
-                    <h3>Smart Summaries</h3>
-                    <p>Generate concise summaries of YouTube videos in various formats: bullet points, brief overviews, or detailed analyses.</p>
+                    <div class="feature-icon">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <h3 class="feature-title">AI-Powered Summaries</h3>
+                    <p class="feature-description">Automatically generates concise summaries of YouTube videos using Gemini 2.0 Flash Lite AI technology.</p>
                 </div>
                 <div class="feature-card">
-                    <h3>AI Chat</h3>
-                    <p>Engage in meaningful conversations about video content with our advanced AI powered by Google's Gemini model.</p>
+                    <div class="feature-icon">
+                        <i class="fas fa-volume-up"></i>
+                    </div>
+                    <h3 class="feature-title">Text-to-Speech</h3>
+                    <p class="feature-description">Listen to summaries with adjustable playback speed (up to 16x) and voice selection.</p>
                 </div>
                 <div class="feature-card">
-                    <h3>Customizable</h3>
-                    <p>Choose your preferred summary length and style to match your reading preferences.</p>
+                    <div class="feature-icon">
+                        <i class="fas fa-highlighter"></i>
+                    </div>
+                    <h3 class="feature-title">Word Highlighting</h3>
+                    <p class="feature-description">Follow along with real-time word-by-word highlighting as the summary is read aloud.</p>
                 </div>
                 <div class="feature-card">
-                    <h3>Easy to Use</h3>
-                    <p>Seamlessly integrated into your YouTube experience with a clean and intuitive interface.</p>
+                    <div class="feature-icon">
+                        <i class="fas fa-list-ul"></i>
+                    </div>
+                    <h3 class="feature-title">Multiple Summary Types</h3>
+                    <p class="feature-description">Choose between different summary formats: bullet points, brief, detailed, key points, and chapter markers.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-text-height"></i>
+                    </div>
+                    <h3 class="feature-title">Adjustable Length</h3>
+                    <p class="feature-description">Select your preferred summary length: short, medium, or long.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-palette"></i>
+                    </div>
+                    <h3 class="feature-title">Markdown Formatting</h3>
+                    <p class="feature-description">Summaries are displayed with proper markdown formatting for better readability.</p>
                 </div>
             </div>
-        </section>
+        </div>
+    </section>
 
-        <section id="installation">
-            <h2>Installation Instructions</h2>
-            <ol>
-                <li>Clone the repository or download the latest release from GitHub</li>
-                <li>Open your browser's extension management page</li>
-                <li>Enable Developer Mode</li>
-                <li>Click "Load unpacked" and select the extension directory</li>
-                <li>Configure your API keys in the extension settings</li>
-            </ol>
-        </section>
+    <section id="installation">
+        <div class="container">
+            <h2 class="section-title">Installation Instructions</h2>
+            <div class="installation-steps">
+                <div class="step">
+                    <span class="step-number">1</span>
+                    <span>Clone or download the repository from <a href="https://github.com/chirag127/TubeSumTalk" target="_blank">GitHub</a>.</span>
+                </div>
+                <div class="step">
+                    <span class="step-number">2</span>
+                    <span>Open your browser's extension page:</span>
+                    <ul>
+                        <li>Chrome: Navigate to chrome://extensions/</li>
+                        <li>Edge: Navigate to edge://extensions/</li>
+                        <li>Firefox: Navigate to about:addons</li>
+                    </ul>
+                </div>
+                <div class="step">
+                    <span class="step-number">3</span>
+                    <span>Enable "Developer mode" (usually a toggle in the top-right corner).</span>
+                </div>
+                <div class="step">
+                    <span class="step-number">4</span>
+                    <span>Click "Load unpacked" (Chrome/Edge) or "Load Temporary Add-on" (Firefox).</span>
+                </div>
+                <div class="step">
+                    <span class="step-number">5</span>
+                    <span>Select the <code>extension</code> directory from the downloaded repository.</span>
+                </div>
+                <div class="step">
+                    <span class="step-number">6</span>
+                    <span>Set up the backend server by following the instructions in the README.md file.</span>
+                </div>
+            </div>
+        </div>
+    </section>
 
-        <section id="how-to-use">
-            <h2>How to Use</h2>
-            <ol>
-                <li>Navigate to any YouTube video</li>
-                <li>Click the TubeSumTalk extension icon</li>
-                <li>Choose your desired summary type and length</li>
-                <li>Get instant summaries and start chatting about the content</li>
-            </ol>
-        </section>
+    <section id="usage">
+        <div class="container">
+            <h2 class="section-title">How to Use</h2>
+            <div class="usage-content">
+                <p>Using TubeSumTalk is simple and intuitive:</p>
+                <ul>
+                    <li>Navigate to any YouTube video page.</li>
+                    <li>The TubeSumTalk sidebar will automatically appear on the right side of the video.</li>
+                    <li>The extension will extract the transcript and generate a summary.</li>
+                    <li>Click the play button to have the summary read aloud with word highlighting.</li>
+                    <li>Use the settings to customize the TTS voice, speed, and pitch.</li>
+                    <li>Access additional settings through the extension popup to change summary type and length.</li>
+                </ul>
+            </div>
+        </div>
+    </section>
 
-        <section id="tech-stack">
-            <h2>Technology Stack</h2>
-            <ul>
-                <li>JavaScript (ES6+)</li>
-                <li>Chrome Extension APIs</li>
-                <li>Google's Gemini AI Model</li>
-                <li>Node.js Backend</li>
-                <li>FastAPI & Flask</li>
-            </ul>
-        </section>
-    </main>
+    <section id="technology">
+        <div class="container">
+            <h2 class="section-title">Technology Stack</h2>
+            <div class="tech-stack">
+                <div class="tech-item">
+                    <span class="tech-icon"><i class="fab fa-js"></i></span>
+                    <span>JavaScript</span>
+                </div>
+                <div class="tech-item">
+                    <span class="tech-icon"><i class="fab fa-html5"></i></span>
+                    <span>HTML5</span>
+                </div>
+                <div class="tech-item">
+                    <span class="tech-icon"><i class="fab fa-css3-alt"></i></span>
+                    <span>CSS3</span>
+                </div>
+                <div class="tech-item">
+                    <span class="tech-icon"><i class="fab fa-chrome"></i></span>
+                    <span>Chrome Extension API</span>
+                </div>
+                <div class="tech-item">
+                    <span class="tech-icon"><i class="fab fa-node-js"></i></span>
+                    <span>Node.js</span>
+                </div>
+                <div class="tech-item">
+                    <span class="tech-icon"><i class="fab fa-google"></i></span>
+                    <span>Gemini AI</span>
+                </div>
+                <div class="tech-item">
+                    <span class="tech-icon"><i class="fas fa-server"></i></span>
+                    <span>Express.js</span>
+                </div>
+                <div class="tech-item">
+                    <span class="tech-icon"><i class="fas fa-microphone"></i></span>
+                    <span>Web Speech API</span>
+                </div>
+            </div>
+        </div>
+    </section>
 
     <footer>
-        <p>© 2025 TubeSumTalk. All rights reserved.</p>
-        <div class="cta-buttons">
-            <a href="privacy-policy.html" class="button" target="_blank">Privacy Policy</a>
-            <a href="https://github.com/your-username/TubeSumTalk" class="button">GitHub</a>
+        <div class="container">
+            <div class="footer-links">
+                <a href="https://github.com/chirag127/TubeSumTalk" class="footer-link" target="_blank">
+                    <i class="fab fa-github"></i> GitHub
+                </a>
+                <a href="privacy-policy.html" class="footer-link" target="_blank">
+                    <i class="fas fa-shield-alt"></i> Privacy Policy
+                </a>
+                <a href="https://github.com/chirag127/TubeSumTalk/issues" class="footer-link" target="_blank">
+                    <i class="fas fa-bug"></i> Report Issues
+                </a>
+            </div>
+            <p class="copyright">&copy; 2023 TubeSumTalk. Created by Chirag Singhal. All rights reserved.</p>
         </div>
     </footer>
 </body>
