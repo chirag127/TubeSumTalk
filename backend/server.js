@@ -30,18 +30,18 @@ app.post("/summarize", async (req, res) => {
 
         const { videoId, transcript, title } = req.body;
 
-        // More detailed validation
-        if (!videoId) {
-            console.error("Missing videoId in request");
-            return res
-                .status(400)
-                .json({ error: "Missing videoId in request" });
-        }
+        // // More detailed validation
+        // if (!videoId) {
+        //     console.error("Missing videoId in request");
+        //     return res
+        //         .status(400)
+        //         .json({ error: "Missing videoId in request" });
+        // }
 
-        if (!title) {
-            console.error("Missing title in request");
-            return res.status(400).json({ error: "Missing title in request" });
-        }
+        // if (!title) {
+        //     console.error("Missing title in request");
+        //     return res.status(400).json({ error: "Missing title in request" });
+        // }
 
         if (!transcript) {
             console.error("Missing transcript in request");

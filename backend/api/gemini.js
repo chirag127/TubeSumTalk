@@ -17,6 +17,10 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
  */
 async function generateSummary(title, transcript) {
     try {
+
+        console.log("Generating summary for video:", title);
+        console.log("gemini api key:", process.env.GEMINI_API_KEY);
+
         // Check if API key is set
         if (!process.env.GEMINI_API_KEY) {
             throw new Error(

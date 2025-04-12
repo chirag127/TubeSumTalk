@@ -4,7 +4,7 @@
  */
 
 // Constants
-const API_BASE_URL = "http://localhost:8000";
+const API_BASE_URL = "https://tubesumtalk.onrender.com";
 
 // Listen for messages from content scripts
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
