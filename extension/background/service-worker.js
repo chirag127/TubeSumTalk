@@ -9,7 +9,13 @@ const API_BASE_URL = "https://tubesumtalk.onrender.com";
 // Listen for messages from content scripts
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.action === "summarize") {
-        summarizeVideo(message.videoId, message.transcript, message.title)
+        summarizeVideo(
+            message.videoId,
+            message.transcript,
+            message.title,
+            message.summaryType,
+            message.summaryLength
+        )
             .then((summary) => {
                 sendResponse({ success: true, summary });
 
@@ -41,9 +47,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
     if (message.action === "getSettings") {
         chrome.storage.sync.get(
-            ["ttsVoice", "ttsRate", "ttsPitch"],
+            ["summaryType", "summaryLength", "ttsVoice", "ttsRate", "ttsPitch"],
             (result) => {
                 sendResponse({
+                    summaryType: result.summaryType || "bullet",
+                    summaryLength: result.summaryLength || "medium",
                     ttsVoice: result.ttsVoice || "default",
                     ttsRate: result.ttsRate || 1.0,
                     ttsPitch: result.ttsPitch || 1.0,
@@ -58,6 +66,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.action === "saveSettings") {
         chrome.storage.sync.set(
             {
+                summaryType: message.summaryType,
+                summaryLength: message.summaryLength,
                 ttsVoice: message.ttsVoice,
                 ttsRate: message.ttsRate,
                 ttsPitch: message.ttsPitch,
@@ -73,7 +83,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 });
 
 // Function to call the backend API
-async function summarizeVideo(videoId, transcript, title) {
+async function summarizeVideo(
+    videoId,
+    transcript,
+    title,
+    summaryType = "bullet",
+    summaryLength = "medium"
+) {
     try {
         console.log(
             `Sending request to backend API at ${API_BASE_URL}/summarize`
@@ -82,6 +98,8 @@ async function summarizeVideo(videoId, transcript, title) {
             videoId,
             title,
             transcriptLength: transcript.length,
+            summaryType,
+            summaryLength,
         });
 
         const response = await fetch(`${API_BASE_URL}/summarize`, {
@@ -93,6 +111,8 @@ async function summarizeVideo(videoId, transcript, title) {
                 videoId,
                 transcript,
                 title,
+                summaryType,
+                summaryLength,
             }),
         });
 

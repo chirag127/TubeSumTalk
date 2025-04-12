@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TubeSumTalk</title>
   <link rel="stylesheet" href="popup.css">
 </head>
+
 <body>
   <div class="popup-container">
     <div class="popup-header">
@@ -16,6 +18,30 @@
     <p class="popup-description">
       Summarize YouTube videos and read summaries aloud with word highlighting.
     </p>
+
+    <div class="popup-section">
+      <h2>Summary Settings</h2>
+
+      <div class="setting">
+        <label for="summary-type">Summary Type:</label>
+        <select id="summary-type" class="select-input">
+          <option value="bullet">Bullet Points</option>
+          <option value="brief">Brief</option>
+          <option value="detailed">Detailed</option>
+          <option value="key-points">Key Points</option>
+          <option value="chapter">Chapter Markers</option>
+        </select>
+      </div>
+
+      <div class="setting">
+        <label for="summary-length">Length:</label>
+        <select id="summary-length" class="select-input">
+          <option value="short">Short</option>
+          <option value="medium">Medium</option>
+          <option value="long">Long</option>
+        </select>
+      </div>
+    </div>
 
     <div class="popup-section">
       <h2>TTS Settings</h2>
@@ -54,4 +80,5 @@
 
   <script src="popup.js"></script>
 </body>
+
 </html>

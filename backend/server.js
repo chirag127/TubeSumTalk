@@ -28,7 +28,13 @@ app.post("/summarize", async (req, res) => {
     try {
         console.log("Received request body:", req.body);
 
-        const { videoId, transcript, title } = req.body;
+        const {
+            videoId,
+            transcript,
+            title,
+            summaryType = "bullet",
+            summaryLength = "medium",
+        } = req.body;
 
         // // More detailed validation
         // if (!videoId) {
@@ -53,8 +59,15 @@ app.post("/summarize", async (req, res) => {
         console.log("Processing request for video:", videoId);
         console.log("Title:", title);
         console.log("Transcript length:", transcript.length);
+        console.log("Summary type:", summaryType);
+        console.log("Summary length:", summaryLength);
 
-        const summary = await generateSummary(title, transcript);
+        const summary = await generateSummary(
+            title,
+            transcript,
+            summaryType,
+            summaryLength
+        );
         console.log("Summary generated successfully");
 
         return res.json({ summary });

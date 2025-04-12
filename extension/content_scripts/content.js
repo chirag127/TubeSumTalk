@@ -88,27 +88,43 @@ async function init() {
         // Combine transcript segments into a single text
         const transcriptText = transcript.map((item) => item.text).join(" ");
 
-        // Send message to background script to get summary
-        chrome.runtime.sendMessage(
-            {
-                action: "summarize",
-                videoId: videoDetails.videoId,
-                transcript: transcriptText,
-                title: videoDetails.title,
-            },
-            (response) => {
-                isProcessing = false;
+        // Get summary settings
+        chrome.storage.sync.get(
+            ["summaryType", "summaryLength"],
+            (settings) => {
+                const summaryType = settings.summaryType || "bullet";
+                const summaryLength = settings.summaryLength || "medium";
 
-                if (response && response.success) {
-                    // Display summary in sidebar
-                    sidebar.setSummary(response.summary);
-                } else {
-                    // Display error
-                    sidebar.showError(
-                        response?.error ||
-                            "Failed to generate summary. Please try again."
-                    );
-                }
+                console.log("Using summary settings:", {
+                    summaryType,
+                    summaryLength,
+                });
+
+                // Send message to background script to get summary
+                chrome.runtime.sendMessage(
+                    {
+                        action: "summarize",
+                        videoId: videoDetails.videoId,
+                        transcript: transcriptText,
+                        title: videoDetails.title,
+                        summaryType: summaryType,
+                        summaryLength: summaryLength,
+                    },
+                    (response) => {
+                        isProcessing = false;
+
+                        if (response && response.success) {
+                            // Display summary in sidebar
+                            sidebar.setSummary(response.summary);
+                        } else {
+                            // Display error
+                            sidebar.showError(
+                                response?.error ||
+                                    "Failed to generate summary. Please try again."
+                            );
+                        }
+                    }
+                );
             }
         );
     } catch (error) {
