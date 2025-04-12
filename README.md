@@ -12,11 +12,12 @@ Visit our website: [https://chirag127.github.io/TubeSumTalk/](https://chirag127.
 
 ## 🛠️ Tech Stack / Tools Used
 
-- **Frontend**: JavaScript, HTML5, CSS3
-- **Browser APIs**: Chrome Extension API, Web Speech API
-- **Backend**: Node.js, Express.js
-- **AI**: Google Gemini 2.0 Flash Lite
-- **Version Control**: Git, GitHub
+-   **Frontend**: JavaScript, HTML5, CSS3
+-   **Browser APIs**: Chrome Extension API, Web Speech API
+-   **Backend**: Node.js, Express.js
+-   **AI**: Google Gemini 2.0 Flash Lite
+-   **Architecture**: Modular design with separation of concerns
+-   **Version Control**: Git, GitHub
 
 ## 📦 Installation Instructions
 
@@ -25,9 +26,9 @@ Visit our website: [https://chirag127.github.io/TubeSumTalk/](https://chirag127.
 1. Clone this repository or download it as a ZIP file
 2. Extract the contents if you downloaded a ZIP file
 3. Open your browser's extension page:
-   - Chrome: `chrome://extensions/`
-   - Edge: `edge://extensions/`
-   - Firefox: `about:addons`
+    - Chrome: `chrome://extensions/`
+    - Edge: `edge://extensions/`
+    - Firefox: `about:addons`
 4. Enable "Developer mode" (usually a toggle in the top-right corner)
 5. Click "Load unpacked" (Chrome/Edge) or "Load Temporary Add-on" (Firefox)
 6. Select the `extension` directory from the downloaded repository
@@ -36,18 +37,18 @@ Visit our website: [https://chirag127.github.io/TubeSumTalk/](https://chirag127.
 
 1. Navigate to the `backend` directory
 2. Create a `.env` file with your Gemini API key:
-   ```
-   GEMINI_API_KEY=your_api_key_here
-   PORT=8000
-   ```
+    ```
+    GEMINI_API_KEY=your_api_key_here
+    PORT=8000
+    ```
 3. Install dependencies:
-   ```
-   npm install
-   ```
+    ```
+    npm install
+    ```
 4. Start the server:
-   ```
-   npm start
-   ```
+    ```
+    npm start
+    ```
 
 ## 🔧 Usage
 
@@ -60,14 +61,39 @@ Visit our website: [https://chirag127.github.io/TubeSumTalk/](https://chirag127.
 
 ## 🧪 Features
 
-- **AI-Powered Summaries**: Automatically generates concise summaries of YouTube videos
-- **Multiple Summary Types**: Choose between bullet points, brief, detailed, key points, and chapter markers
-- **Adjustable Length**: Select your preferred summary length (short, medium, or long)
-- **Text-to-Speech**: Listen to summaries with adjustable playback speed (up to 16x) and voice selection
-- **Word Highlighting**: Follow along with real-time word-by-word highlighting as the summary is read aloud
-- **Markdown Formatting**: Summaries are displayed with proper markdown formatting for better readability
-- **Customizable UI**: Resize the sidebar to your preferred width
-- **Persistent Settings**: Your preferences are saved between sessions
+-   **AI-Powered Summaries**: Automatically generates concise summaries of YouTube videos
+-   **Multiple Summary Types**: Choose between bullet points, brief, detailed, key points, and chapter markers
+-   **Adjustable Length**: Select your preferred summary length (short, medium, or long)
+-   **Text-to-Speech**: Listen to summaries with adjustable playback speed (up to 16x) and voice selection
+-   **Word Highlighting**: Follow along with real-time word-by-word highlighting as the summary is read aloud
+-   **Markdown Formatting**: Summaries are displayed with proper markdown formatting for better readability
+-   **Customizable UI**: Resize the sidebar to your preferred width
+-   **Persistent Settings**: Your preferences are saved between sessions
+-   **Modular Architecture**: Built with a modular design for better maintainability and extensibility
+
+## 📚 Modular Architecture
+
+TubeSumTalk is built with a modular architecture for better maintainability and separation of concerns:
+
+### Utility Modules
+
+-   **API Service** (`utils/api.js`): Handles communication with the backend API
+-   **Transcript Service** (`utils/transcript.js`): Extracts YouTube video transcripts
+-   **TTS Service** (`utils/tts.js`): Handles text-to-speech functionality with word highlighting
+-   **Storage Service** (`utils/storage.js`): Manages user preferences and data
+-   **UI Service** (`utils/ui.js`): Provides common UI utilities
+-   **YouTube Service** (`utils/youtube.js`): Interacts with YouTube's DOM structure
+-   **Settings Manager** (`utils/settings.js`): Manages user settings and preferences
+-   **Markdown Parser** (`utils/markdown.js`): Parses markdown to HTML for better summary display
+
+### Content Scripts
+
+-   **Widget** (`content_scripts/widget.js`): UI component for displaying summaries
+-   **Content Script** (`content_scripts/content.js`): Main content script that coordinates between modules
+
+### Background Service Worker
+
+-   **Service Worker** (`background/service-worker.js`): Handles API communication and manages extension state
 
 ## 📸 Screenshots
 

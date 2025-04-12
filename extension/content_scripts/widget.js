@@ -1,7 +1,14 @@
 /**
- * TubeSumTalk Widget
+ * TubeSumTalk Widget (Modular Version)
  * Handles the widget UI and functionality in the related videos section
  */
+
+// Import utility modules
+import youtubeService from '../utils/youtube.js';
+import uiService from '../utils/ui.js';
+import ttsService from '../utils/tts.js';
+import settingsManager from '../utils/settings.js';
+import markdownParser from '../utils/markdown.js';
 
 class TubeSumTalkWidget {
     constructor() {
@@ -19,28 +26,21 @@ class TubeSumTalkWidget {
     // Initialize the widget
     async init() {
         // Create widget element
-        this.widgetElement = document.createElement("div");
-        this.widgetElement.id = "tubesumtalk-widget";
-        this.widgetElement.className = "tubesumtalk-widget";
+        this.widgetElement = uiService.createElement("div", {
+            id: "tubesumtalk-widget",
+            className: "tubesumtalk-widget"
+        });
 
         // Add widget HTML
         this.widgetElement.innerHTML = this.getWidgetHTML();
 
-        // Find the secondary column (related videos section)
-        const secondarySection =
-            document.querySelector("#secondary") ||
-            document.querySelector("#secondary-inner");
-
-        if (!secondarySection) {
+        // Insert widget at the top of the secondary section
+        const inserted = youtubeService.insertIntoSecondaryColumn(this.widgetElement);
+        
+        if (!inserted) {
             console.error("Could not find secondary section to inject widget");
             return null;
         }
-
-        // Insert widget at the top of the secondary section
-        secondarySection.insertBefore(
-            this.widgetElement,
-            secondarySection.firstChild
-        );
 
         // Set up event listeners
         this.setupEventListeners();
@@ -53,7 +53,7 @@ class TubeSumTalkWidget {
             "#tubesumtalk-voice-select"
         );
         if (voiceSelect) {
-            await populateVoiceSelect(voiceSelect);
+            this.populateVoiceSelect(voiceSelect);
         }
 
         // Return the widget instance
@@ -144,7 +144,7 @@ class TubeSumTalkWidget {
                 this.ttsSettings.rate = rate;
 
                 // Save setting
-                chrome.storage.sync.set({ ttsRate: rate });
+                settingsManager.saveTtsSettings({ ttsRate: rate });
             });
         }
 
@@ -157,7 +157,7 @@ class TubeSumTalkWidget {
                 this.ttsSettings.voice = voiceSelect.value;
 
                 // Save setting
-                chrome.storage.sync.set({ ttsVoice: voiceSelect.value });
+                settingsManager.saveTtsSettings({ ttsVoice: voiceSelect.value });
             });
         }
 
@@ -215,176 +215,245 @@ class TubeSumTalkWidget {
             return;
         }
 
-        // Use the original markdown text stored in the data attribute
         const summaryElement = this.widgetElement.querySelector(
             "#tubesumtalk-summary"
         );
-        if (summaryElement) {
-            // Get the scrollable container
-            const scrollContainer = this.widgetElement.querySelector(
-                ".tubesumtalk-summary-container"
-            );
+        if (!summaryElement) return;
 
-            // Pass null as the first parameter since the TTS utility will get the text from the container
-            // Pass the scrollable container as an option
-            togglePlayPause(null, {
-                ...this.ttsSettings,
-                scrollContainer: scrollContainer,
-            });
+        // Get the scrollable container
+        const scrollContainer = this.widgetElement.querySelector(
+            ".tubesumtalk-summary-container"
+        );
+
+        // Get the play/pause button
+        const playPauseButton = this.widgetElement.querySelector(
+            "#tubesumtalk-play-pause"
+        );
+
+        // Check if TTS is already playing
+        if (ttsService.isPlaying) {
+            // Pause TTS
+            ttsService.pause();
+            
+            // Update button
+            if (playPauseButton) {
+                playPauseButton.innerHTML = "▶";
+                playPauseButton.setAttribute("aria-label", "Play");
+                playPauseButton.title = "Play";
+            }
         } else {
-            // Fallback to using the stored summary
-            togglePlayPause(this.summary, this.ttsSettings);
+            // Apply TTS settings
+            ttsService.setVoice(this.ttsSettings.voice);
+            ttsService.setRate(this.ttsSettings.rate);
+            ttsService.setPitch(this.ttsSettings.pitch);
+            
+            // Set up word highlighting
+            ttsService.onHighlight((wordIndex) => {
+                // Clear previous highlighting
+                const words = summaryElement.querySelectorAll('.tubesumtalk-word');
+                words.forEach(word => word.classList.remove('tubesumtalk-highlighted'));
+                
+                // Highlight current word
+                if (wordIndex >= 0 && wordIndex < words.length) {
+                    words[wordIndex].classList.add('tubesumtalk-highlighted');
+                }
+            });
+            
+            // Set up scrolling
+            if (scrollContainer) {
+                ttsService.onScroll((wordIndex) => {
+                    const words = summaryElement.querySelectorAll('.tubesumtalk-word');
+                    if (wordIndex >= 0 && wordIndex < words.length) {
+                        const word = words[wordIndex];
+                        const wordTop = word.offsetTop;
+                        const containerHeight = scrollContainer.clientHeight;
+                        
+                        // Scroll to keep the current word in view
+                        scrollContainer.scrollTop = wordTop - (containerHeight / 2);
+                    }
+                });
+            }
+            
+            // Set up end callback
+            ttsService.onEnd(() => {
+                // Update button
+                if (playPauseButton) {
+                    playPauseButton.innerHTML = "▶";
+                    playPauseButton.setAttribute("aria-label", "Play");
+                    playPauseButton.title = "Play";
+                }
+            });
+            
+            // Get the text to speak
+            const text = summaryElement.getAttribute("data-plain-text") || this.summary;
+            
+            // Start speaking
+            ttsService.speak(text);
+            
+            // Update button
+            if (playPauseButton) {
+                playPauseButton.innerHTML = "⏸";
+                playPauseButton.setAttribute("aria-label", "Pause");
+                playPauseButton.title = "Pause";
+            }
         }
     }
 
     // Show settings popup
     showSettingsPopup() {
-        // Create popup
-        const popup = document.createElement("div");
-        popup.className = "tubesumtalk-settings-popup";
-
-        // Add popup HTML
-        popup.innerHTML = `
-      <div class="tubesumtalk-settings-content">
-        <h3>TTS Settings</h3>
-
-        <div class="tubesumtalk-setting">
-          <label for="tubesumtalk-settings-voice">Voice:</label>
-          <select id="tubesumtalk-settings-voice" class="tubesumtalk-voice-select">
-            <option value="default">Default Voice</option>
-          </select>
-        </div>
-
-        <div class="tubesumtalk-setting">
-          <label for="tubesumtalk-settings-speed">Speed (0.5x - 16x):</label>
-          <input type="range" id="tubesumtalk-settings-speed" class="tubesumtalk-speed-slider"
-                min="0.5" max="16" step="0.5" value="${this.ttsSettings.rate}">
-          <span id="tubesumtalk-settings-speed-value">${this.ttsSettings.rate.toFixed(
-              1
-          )}×</span>
-        </div>
-
-        <div class="tubesumtalk-setting">
-          <label for="tubesumtalk-settings-pitch">Pitch:</label>
-          <input type="range" id="tubesumtalk-settings-pitch" class="tubesumtalk-speed-slider"
-                min="0.5" max="2" step="0.1" value="${this.ttsSettings.pitch}">
-          <span id="tubesumtalk-settings-pitch-value">${this.ttsSettings.pitch.toFixed(
-              1
-          )}</span>
-        </div>
-
-        <div class="tubesumtalk-setting-buttons">
-          <button id="tubesumtalk-settings-save" class="tubesumtalk-save">Save</button>
-          <button id="tubesumtalk-settings-cancel" class="tubesumtalk-cancel">Cancel</button>
-        </div>
-      </div>
-    `;
-
-        // Add to page
-        document.body.appendChild(popup);
-
+        // Create modal using UI service
+        const settingsContent = uiService.createElement('div', {}, [
+            uiService.createElement('h3', {}, 'TTS Settings'),
+            
+            // Voice setting
+            uiService.createElement('div', { className: 'tubesumtalk-setting' }, [
+                uiService.createElement('label', { for: 'tubesumtalk-settings-voice' }, 'Voice:'),
+                uiService.createElement('select', { 
+                    id: 'tubesumtalk-settings-voice', 
+                    className: 'tubesumtalk-voice-select' 
+                }, [
+                    uiService.createElement('option', { value: 'default' }, 'Default Voice')
+                ])
+            ]),
+            
+            // Speed setting
+            uiService.createElement('div', { className: 'tubesumtalk-setting' }, [
+                uiService.createElement('label', { for: 'tubesumtalk-settings-speed' }, 'Speed (0.5x - 16x):'),
+                uiService.createElement('div', { className: 'range-container' }, [
+                    uiService.createElement('input', { 
+                        type: 'range',
+                        id: 'tubesumtalk-settings-speed',
+                        className: 'tubesumtalk-speed-slider',
+                        min: '0.5',
+                        max: '16',
+                        step: '0.5',
+                        value: this.ttsSettings.rate
+                    }),
+                    uiService.createElement('span', { 
+                        id: 'tubesumtalk-settings-speed-value' 
+                    }, `${this.ttsSettings.rate.toFixed(1)}×`)
+                ])
+            ]),
+            
+            // Pitch setting
+            uiService.createElement('div', { className: 'tubesumtalk-setting' }, [
+                uiService.createElement('label', { for: 'tubesumtalk-settings-pitch' }, 'Pitch:'),
+                uiService.createElement('div', { className: 'range-container' }, [
+                    uiService.createElement('input', { 
+                        type: 'range',
+                        id: 'tubesumtalk-settings-pitch',
+                        className: 'tubesumtalk-speed-slider',
+                        min: '0.5',
+                        max: '2',
+                        step: '0.1',
+                        value: this.ttsSettings.pitch
+                    }),
+                    uiService.createElement('span', { 
+                        id: 'tubesumtalk-settings-pitch-value' 
+                    }, this.ttsSettings.pitch.toFixed(1))
+                ])
+            ])
+        ]);
+        
+        // Create modal
+        const modal = uiService.createModal('TTS Settings', settingsContent, [
+            { text: 'Save', primary: true, onClick: () => this.saveSettings(modal) },
+            { text: 'Cancel', primary: false }
+        ], { className: 'tubesumtalk-settings-popup' });
+        
         // Populate voice options
-        const voiceSelect = popup.querySelector("#tubesumtalk-settings-voice");
-        populateVoiceSelect(voiceSelect);
-
+        const voiceSelect = modal.querySelector("#tubesumtalk-settings-voice");
+        this.populateVoiceSelect(voiceSelect);
+        
         // Set current values
         voiceSelect.value = this.ttsSettings.voice;
-
+        
         // Add event listeners
-        const speedSlider = popup.querySelector("#tubesumtalk-settings-speed");
-        const speedValue = popup.querySelector(
-            "#tubesumtalk-settings-speed-value"
-        );
+        const speedSlider = modal.querySelector("#tubesumtalk-settings-speed");
+        const speedValue = modal.querySelector("#tubesumtalk-settings-speed-value");
         speedSlider.addEventListener("input", () => {
             const rate = parseFloat(speedSlider.value);
             speedValue.textContent = `${rate.toFixed(1)}×`;
         });
-
-        const pitchSlider = popup.querySelector("#tubesumtalk-settings-pitch");
-        const pitchValue = popup.querySelector(
-            "#tubesumtalk-settings-pitch-value"
-        );
+        
+        const pitchSlider = modal.querySelector("#tubesumtalk-settings-pitch");
+        const pitchValue = modal.querySelector("#tubesumtalk-settings-pitch-value");
         pitchSlider.addEventListener("input", () => {
             const pitch = parseFloat(pitchSlider.value);
             pitchValue.textContent = pitch.toFixed(1);
         });
-
-        // Save button
-        const saveButton = popup.querySelector("#tubesumtalk-settings-save");
-        saveButton.addEventListener("click", () => {
-            // Update settings
-            this.ttsSettings.voice = voiceSelect.value;
-            this.ttsSettings.rate = parseFloat(speedSlider.value);
-            this.ttsSettings.pitch = parseFloat(pitchSlider.value);
-
-            // Update UI
-            const mainVoiceSelect = this.widgetElement.querySelector(
-                "#tubesumtalk-voice-select"
-            );
-            const mainSpeedSlider = this.widgetElement.querySelector(
-                "#tubesumtalk-speed-slider"
-            );
-            const mainSpeedValue = this.widgetElement.querySelector(
-                "#tubesumtalk-speed-value"
-            );
-
-            if (mainVoiceSelect) mainVoiceSelect.value = this.ttsSettings.voice;
-            if (mainSpeedSlider) mainSpeedSlider.value = this.ttsSettings.rate;
-            if (mainSpeedValue)
-                mainSpeedValue.textContent = `${this.ttsSettings.rate.toFixed(
-                    1
-                )}×`;
-
-            // Save settings
-            chrome.storage.sync.set({
-                ttsVoice: this.ttsSettings.voice,
-                ttsRate: this.ttsSettings.rate,
-                ttsPitch: this.ttsSettings.pitch,
-            });
-
-            // Close popup
-            popup.remove();
+    }
+    
+    // Save settings from modal
+    saveSettings(modal) {
+        const voiceSelect = modal.querySelector("#tubesumtalk-settings-voice");
+        const speedSlider = modal.querySelector("#tubesumtalk-settings-speed");
+        const pitchSlider = modal.querySelector("#tubesumtalk-settings-pitch");
+        
+        // Update settings
+        this.ttsSettings.voice = voiceSelect.value;
+        this.ttsSettings.rate = parseFloat(speedSlider.value);
+        this.ttsSettings.pitch = parseFloat(pitchSlider.value);
+        
+        // Update UI
+        const mainVoiceSelect = this.widgetElement.querySelector("#tubesumtalk-voice-select");
+        const mainSpeedSlider = this.widgetElement.querySelector("#tubesumtalk-speed-slider");
+        const mainSpeedValue = this.widgetElement.querySelector("#tubesumtalk-speed-value");
+        
+        if (mainVoiceSelect) mainVoiceSelect.value = this.ttsSettings.voice;
+        if (mainSpeedSlider) mainSpeedSlider.value = this.ttsSettings.rate;
+        if (mainSpeedValue) mainSpeedValue.textContent = `${this.ttsSettings.rate.toFixed(1)}×`;
+        
+        // Save settings
+        settingsManager.saveTtsSettings({
+            ttsVoice: this.ttsSettings.voice,
+            ttsRate: this.ttsSettings.rate,
+            ttsPitch: this.ttsSettings.pitch
         });
+    }
 
-        // Cancel button
-        const cancelButton = popup.querySelector(
-            "#tubesumtalk-settings-cancel"
-        );
-        cancelButton.addEventListener("click", () => {
-            popup.remove();
+    // Populate voice select dropdown
+    populateVoiceSelect(selectElement) {
+        // Get available voices
+        const voices = ttsService.getVoices();
+        
+        // Clear existing options except default
+        while (selectElement.options.length > 1) {
+            selectElement.remove(1);
+        }
+        
+        // Add voices to select
+        voices.forEach(voice => {
+            const option = document.createElement('option');
+            option.value = voice.name;
+            option.textContent = `${voice.name} (${voice.lang})`;
+            selectElement.appendChild(option);
         });
     }
 
     // Load TTS settings
     async loadTTSSettings() {
-        return new Promise((resolve) => {
-            chrome.storage.sync.get(
-                ["ttsVoice", "ttsRate", "ttsPitch"],
-                (result) => {
-                    if (result.ttsVoice)
-                        this.ttsSettings.voice = result.ttsVoice;
-                    if (result.ttsRate) this.ttsSettings.rate = result.ttsRate;
-                    if (result.ttsPitch)
-                        this.ttsSettings.pitch = result.ttsPitch;
-
-                    // Update UI
-                    const speedSlider = this.widgetElement.querySelector(
-                        "#tubesumtalk-speed-slider"
-                    );
-                    const speedValue = this.widgetElement.querySelector(
-                        "#tubesumtalk-speed-value"
-                    );
-
-                    if (speedSlider) speedSlider.value = this.ttsSettings.rate;
-                    if (speedValue)
-                        speedValue.textContent = `${this.ttsSettings.rate.toFixed(
-                            1
-                        )}×`;
-
-                    resolve();
-                }
-            );
-        });
+        try {
+            // Get TTS settings
+            const settings = await settingsManager.getTtsSettings();
+            
+            // Update settings
+            this.ttsSettings.voice = settings.ttsVoice;
+            this.ttsSettings.rate = settings.ttsRate;
+            this.ttsSettings.pitch = settings.ttsPitch;
+            
+            // Update UI
+            const speedSlider = this.widgetElement.querySelector("#tubesumtalk-speed-slider");
+            const speedValue = this.widgetElement.querySelector("#tubesumtalk-speed-value");
+            
+            if (speedSlider) speedSlider.value = this.ttsSettings.rate;
+            if (speedValue) speedValue.textContent = `${this.ttsSettings.rate.toFixed(1)}×`;
+            
+            return settings;
+        } catch (error) {
+            console.error('Error loading TTS settings:', error);
+            return this.ttsSettings;
+        }
     }
 
     // Set video details
@@ -394,65 +463,26 @@ class TubeSumTalkWidget {
 
     // Set summary
     setSummary(summary) {
-        // Store both the original markdown and the parsed HTML
+        // Store the original markdown
         this.summary = summary;
-        this.originalMarkdown = summary;
-
-        const summaryElement = this.widgetElement.querySelector(
-            "#tubesumtalk-summary"
-        );
+        
+        const summaryElement = this.widgetElement.querySelector("#tubesumtalk-summary");
         if (summaryElement) {
-            // Parse markdown to HTML
-            const htmlContent = this.parseMarkdown(summary);
-            summaryElement.innerHTML = htmlContent;
-
-            // Store the original markdown as a data attribute for easy access
+            // Parse markdown to HTML with word highlighting
+            const parsedContent = markdownParser.parseWithHighlighting(summary);
+            
+            // Set the HTML content
+            summaryElement.innerHTML = parsedContent.html;
+            
+            // Store the original markdown and plain text as data attributes
             summaryElement.setAttribute("data-original-markdown", summary);
+            summaryElement.setAttribute("data-plain-text", parsedContent.plainText);
         }
-    }
-
-    // Parse markdown to HTML
-    parseMarkdown(markdown) {
-        if (!markdown) return "";
-
-        // Replace bullet points
-        let html = markdown.replace(/^\s*[-*+]\s+(.+)$/gm, "<li>$1</li>");
-
-        // Wrap lists in <ul> tags
-        html = html.replace(/<li>(.+?)<\/li>\n*(?=<li>|$)/gs, "<li>$1</li>");
-        if (html.includes("<li>")) {
-            html = "<ul>" + html + "</ul>";
-        }
-
-        // Replace headers
-        html = html.replace(/^\s*#{1,6}\s+(.+)$/gm, (match, p1) => {
-            const level = match.trim().indexOf(" ");
-            return `<h${level}>${p1}</h${level}>`;
-        });
-
-        // Replace bold text
-        html = html.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
-
-        // Replace italic text
-        html = html.replace(/\*(.+?)\*/g, "<em>$1</em>");
-
-        // Replace links
-        html = html.replace(
-            /\[(.+?)\]\((.+?)\)/g,
-            '<a href="$2" target="_blank">$1</a>'
-        );
-
-        // Replace paragraphs
-        html = html.replace(/^(?!<[uo]l>|<li>|<h\d>)(.+)$/gm, "<p>$1</p>");
-
-        return html;
     }
 
     // Show error
     showError(message) {
-        const summaryElement = this.widgetElement.querySelector(
-            "#tubesumtalk-summary"
-        );
+        const summaryElement = this.widgetElement.querySelector("#tubesumtalk-summary");
         if (summaryElement) {
             summaryElement.innerHTML = `<div class="tubesumtalk-error">${message}</div>`;
         }
@@ -460,9 +490,7 @@ class TubeSumTalkWidget {
 
     // Show loading
     showLoading() {
-        const summaryElement = this.widgetElement.querySelector(
-            "#tubesumtalk-summary"
-        );
+        const summaryElement = this.widgetElement.querySelector("#tubesumtalk-summary");
         if (summaryElement) {
             summaryElement.innerHTML = `
         <div class="tubesumtalk-loading">
@@ -473,3 +501,6 @@ class TubeSumTalkWidget {
         }
     }
 }
+
+// Export the widget class
+export default TubeSumTalkWidget;

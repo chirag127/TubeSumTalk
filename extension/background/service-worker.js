@@ -1,10 +1,11 @@
 /**
- * TubeSumTalk Background Service Worker
+ * TubeSumTalk Background Service Worker (Modular Version)
  * Handles communication between content scripts and the backend API
  */
 
-// Constants
-const API_BASE_URL = "https://tubesumtalk.onrender.com";
+// Import utility modules
+import apiService from '../utils/api.js';
+import settingsManager from '../utils/settings.js';
 
 // Listen for messages from content scripts
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
@@ -46,36 +47,38 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     }
 
     if (message.action === "getSettings") {
-        chrome.storage.sync.get(
-            ["summaryType", "summaryLength", "ttsVoice", "ttsRate", "ttsPitch"],
-            (result) => {
-                sendResponse({
-                    summaryType: result.summaryType || "bullet",
-                    summaryLength: result.summaryLength || "medium",
-                    ttsVoice: result.ttsVoice || "default",
-                    ttsRate: result.ttsRate || 1.0,
-                    ttsPitch: result.ttsPitch || 1.0,
-                });
-            }
-        );
+        // Use the settings manager to get settings
+        settingsManager.getAll().then(settings => {
+            sendResponse(settings);
+        }).catch(error => {
+            console.error("Error getting settings:", error);
+            sendResponse({
+                summaryType: "bullet",
+                summaryLength: "medium",
+                ttsVoice: "default",
+                ttsRate: 1.0,
+                ttsPitch: 1.0,
+            });
+        });
 
         // Return true to indicate we'll send a response asynchronously
         return true;
     }
 
     if (message.action === "saveSettings") {
-        chrome.storage.sync.set(
-            {
-                summaryType: message.summaryType,
-                summaryLength: message.summaryLength,
-                ttsVoice: message.ttsVoice,
-                ttsRate: message.ttsRate,
-                ttsPitch: message.ttsPitch,
-            },
-            () => {
-                sendResponse({ success: true });
-            }
-        );
+        // Use the settings manager to save settings
+        settingsManager.save({
+            summaryType: message.summaryType,
+            summaryLength: message.summaryLength,
+            ttsVoice: message.ttsVoice,
+            ttsRate: message.ttsRate,
+            ttsPitch: message.ttsPitch,
+        }).then(() => {
+            sendResponse({ success: true });
+        }).catch(error => {
+            console.error("Error saving settings:", error);
+            sendResponse({ success: false, error: error.message });
+        });
 
         // Return true to indicate we'll send a response asynchronously
         return true;
@@ -91,53 +94,31 @@ async function summarizeVideo(
     summaryLength = "medium"
 ) {
     try {
-        console.log(
-            `Sending request to backend API at ${API_BASE_URL}/summarize`
-        );
-        console.log("Request data:", {
+        // Use the API service to get the summary
+        return await apiService.getSummary(
             videoId,
+            transcript,
             title,
-            transcriptLength: transcript.length,
             summaryType,
-            summaryLength,
-        });
-
-        const response = await fetch(`${API_BASE_URL}/summarize`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                videoId,
-                transcript,
-                title,
-                summaryType,
-                summaryLength,
-            }),
-        });
-
-        console.log("Response status:", response.status);
-
-        if (!response.ok) {
-            let errorMessage = `API error: ${response.status}`;
-
-            try {
-                const errorData = await response.json();
-                errorMessage = errorData.error || errorMessage;
-            } catch (e) {
-                console.error("Failed to parse error response:", e);
-            }
-
-            throw new Error(errorMessage);
-        }
-
-        const data = await response.json();
-        console.log("Received summary from API");
-
-        // Return the summary as is - it will be parsed as markdown in the sidebar
-        return data.summary;
+            summaryLength
+        );
     } catch (error) {
         console.error("Error calling API:", error);
         throw error;
     }
 }
+
+// Initialize the service worker
+function initialize() {
+    console.log("TubeSumTalk background service worker initialized");
+    
+    // Check API health
+    apiService.checkHealth().then(health => {
+        console.log("API health check:", health);
+    }).catch(error => {
+        console.error("API health check failed:", error);
+    });
+}
+
+// Start the service worker
+initialize();
