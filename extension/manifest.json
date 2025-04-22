@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "TubeSumTalk",
+  "name": "YouTube Summarizer",
   "version": "1.0.0",
   "description": "Summarize YouTube videos and read summaries aloud with word highlighting",
   "icons": {
