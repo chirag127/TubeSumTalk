@@ -8,7 +8,6 @@ const YOUTUBE_VIDEO_REGEX = /^https:\/\/www\.youtube\.com\/watch\?v=.+/;
 
 // State
 let widget = null;
-let sidebar = null;
 let currentVideoId = null;
 let isProcessing = false;
 let currentTranscript = null;
@@ -42,7 +41,7 @@ async function init() {
     }
 
     // If we've already processed this video, don't do it again
-    if (videoDetails.videoId === currentVideoId && widget && sidebar) {
+    if (videoDetails.videoId === currentVideoId && widget) {
         return;
     }
 
@@ -58,22 +57,11 @@ async function init() {
         }
     }
 
-    // If sidebar doesn't exist, create it
-    if (!sidebar) {
-        sidebar = await new TubeSumTalkSidebar().init();
-        if (!sidebar) {
-            console.error("Failed to initialize sidebar");
-            return;
-        }
-    }
-
-    // Set video details in widget and sidebar
+    // Set video details in widget
     widget.setVideoDetails(videoDetails);
-    sidebar.setVideoDetails(videoDetails);
 
     // Show loading state
     widget.showLoading();
-    sidebar.showLoading();
 
     // Prevent multiple simultaneous processing
     if (isProcessing) {
@@ -89,7 +77,6 @@ async function init() {
         if (!languages || languages.length === 0) {
             const errorMessage = "No transcript available for this video.";
             widget.showError(errorMessage);
-            sidebar.showError(errorMessage);
             isProcessing = false;
             return;
         }
@@ -105,7 +92,6 @@ async function init() {
             const errorMessage =
                 "Failed to get transcript. Please try another video.";
             widget.showError(errorMessage);
-            sidebar.showError(errorMessage);
             isProcessing = false;
             return;
         }
@@ -142,16 +128,14 @@ async function init() {
                         isProcessing = false;
 
                         if (response && response.success) {
-                            // Display summary in widget and sidebar
+                            // Display summary in widget
                             widget.setSummary(response.summary);
-                            sidebar.setSummary(response.summary);
                         } else {
                             // Display error
                             const errorMessage =
                                 response?.error ||
                                 "Failed to generate summary. Please try again.";
                             widget.showError(errorMessage);
-                            sidebar.showError(errorMessage);
                         }
                     }
                 );
@@ -161,7 +145,6 @@ async function init() {
         console.error("Error processing video:", error);
         const errorMessage = "An error occurred while processing the video.";
         widget.showError(errorMessage);
-        sidebar.showError(errorMessage);
         isProcessing = false;
     }
 }
@@ -212,9 +195,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     ) {
         if (widget) {
             widget.setSummary(message.summary);
-        }
-        if (sidebar) {
-            sidebar.setSummary(message.summary);
         }
         sendResponse({ success: true });
     }

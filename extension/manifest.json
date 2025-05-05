@@ -37,12 +37,10 @@
         "utils/tts.js",
         "utils/theme.js",
         "content_scripts/widget.js",
-        "content_scripts/sidebar.js",
         "content_scripts/content.js"
       ],
       "css": [
-        "content_scripts/widget.css",
-        "content_scripts/sidebar.css"
+        "content_scripts/widget.css"
       ]
     }
   ],
