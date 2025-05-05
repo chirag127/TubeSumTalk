@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "YouTube Summarizer",
-  "version": "1.0.1",
-  "description": "Summarize YouTube videos and read summaries aloud with word highlighting",
+  "name": "TubeSumTalk",
+  "version": "1.0.2",
+  "description": "Summarize YouTube videos, read summaries aloud with word highlighting, and ask questions about video content",
   "icons": {
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",
@@ -35,11 +35,14 @@
       "js": [
         "utils/transcript.js",
         "utils/tts.js",
+        "utils/theme.js",
         "content_scripts/widget.js",
+        "content_scripts/sidebar.js",
         "content_scripts/content.js"
       ],
       "css": [
-        "content_scripts/widget.css"
+        "content_scripts/widget.css",
+        "content_scripts/sidebar.css"
       ]
     }
   ],
@@ -52,5 +55,9 @@
         "https://*.youtube.com/*"
       ]
     }
-  ]
+  ],
+  "options_ui": {
+    "page": "options/options.html",
+    "open_in_tab": false
+  }
 }

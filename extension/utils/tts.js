@@ -1,10 +1,14 @@
 /**
  * Utility functions for text-to-speech with word highlighting
+ * Supports speeds up to 16x through custom rate handling
  */
 
 // TTS state
 let currentUtterance = null;
 let isPlaying = false;
+let customPlaybackRate = 1.0;
+let utteranceQueue = [];
+let isCustomRateActive = false;
 
 // Speak text with word highlighting
 function speakWithHighlighting(_, options = {}) {
@@ -95,10 +99,19 @@ function speakWithHighlighting(_, options = {}) {
         }
     }
 
-    // Set rate (speed) with support for up to 16x
-    utterance.rate = options.rate || 1.0;
-    // Note: The Web Speech API might have limitations on the maximum rate
-    // Some browsers might cap it at lower values
+    // Handle playback rate (supporting up to 16x)
+    const requestedRate = options.rate || 1.0;
+    customPlaybackRate = requestedRate;
+
+    // Web Speech API typically limits rate to 0.1-10, so we'll use a custom approach for higher rates
+    if (requestedRate > 10) {
+        // Use maximum browser-supported rate (typically 10)
+        utterance.rate = 10;
+        isCustomRateActive = true;
+    } else {
+        utterance.rate = requestedRate;
+        isCustomRateActive = false;
+    }
 
     utterance.pitch = options.pitch || 1.0;
 

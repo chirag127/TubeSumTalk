@@ -255,6 +255,12 @@ html[dark] .tubesumtalk-summary-container::-webkit-scrollbar-thumb {
     font-size: 14px;
 }
 
+.tubesumtalk-error-icon {
+    font-size: 24px;
+    margin-bottom: 8px;
+    text-align: center;
+}
+
 .tubesumtalk-loading {
     display: flex;
     flex-direction: column;
@@ -357,38 +363,47 @@ html[dark] .tubesumtalk-summary-container::-webkit-scrollbar-thumb {
 }
 
 /* Dark mode support */
-html[dark] .tubesumtalk-widget {
+html[dark] .tubesumtalk-widget,
+.tubesumtalk-dark-theme {
     background-color: var(--yt-spec-base-background, #0f0f0f);
     color: var(--yt-spec-text-primary, #fff);
     border-color: var(--yt-spec-10-percent-layer, #333);
 }
 
-html[dark] .tubesumtalk-header {
+html[dark] .tubesumtalk-header,
+.tubesumtalk-dark-theme .tubesumtalk-header {
     background-color: var(--yt-spec-brand-background-primary, #0f0f0f);
     border-bottom-color: var(--yt-spec-10-percent-layer, #333);
 }
 
-html[dark] .tubesumtalk-summary-container {
+html[dark] .tubesumtalk-summary-container,
+.tubesumtalk-dark-theme .tubesumtalk-summary-container {
     background-color: var(--yt-spec-brand-background-solid, #212121);
 }
 
-html[dark] .tubesumtalk-controls {
+html[dark] .tubesumtalk-controls,
+.tubesumtalk-dark-theme .tubesumtalk-controls {
     border-top-color: var(--yt-spec-10-percent-layer, #333);
 }
 
-html[dark] .tubesumtalk-voice-select {
+html[dark] .tubesumtalk-voice-select,
+.tubesumtalk-dark-theme .tubesumtalk-voice-select {
     background-color: var(--yt-spec-base-background, #0f0f0f);
     border-color: var(--yt-spec-10-percent-layer, #333);
+    color: var(--yt-spec-text-primary, #fff);
 }
 
-html[dark] .tubesumtalk-settings-content {
+html[dark] .tubesumtalk-settings-content,
+.tubesumtalk-dark-theme .tubesumtalk-settings-content {
     background-color: var(--yt-spec-base-background, #0f0f0f);
 }
 
-html[dark] .tubesumtalk-cancel {
+html[dark] .tubesumtalk-cancel,
+.tubesumtalk-dark-theme .tubesumtalk-cancel {
     background-color: var(--yt-spec-10-percent-layer, #333);
 }
 
-html[dark] .tubesumtalk-cancel:hover {
+html[dark] .tubesumtalk-cancel:hover,
+.tubesumtalk-dark-theme .tubesumtalk-cancel:hover {
     background-color: var(--yt-spec-15-percent-layer, #444);
 }

@@ -6,7 +6,7 @@
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
-const { generateSummary } = require("./api/gemini");
+const { generateSummary, generateAnswer } = require("./api/gemini");
 
 // Load environment variables
 dotenv.config();
@@ -26,7 +26,7 @@ app.use(
 // Routes
 app.post("/summarize", async (req, res) => {
     try {
-        console.log("Received request body:", req.body);
+        console.log("Received summarize request");
 
         const {
             videoId,
@@ -34,26 +34,22 @@ app.post("/summarize", async (req, res) => {
             title,
             summaryType = "bullet",
             summaryLength = "medium",
+            apiKey,
         } = req.body;
 
-        // // More detailed validation
-        // if (!videoId) {
-        //     console.error("Missing videoId in request");
-        //     return res
-        //         .status(400)
-        //         .json({ error: "Missing videoId in request" });
-        // }
-
-        // if (!title) {
-        //     console.error("Missing title in request");
-        //     return res.status(400).json({ error: "Missing title in request" });
-        // }
-
+        // Validate required fields
         if (!transcript) {
             console.error("Missing transcript in request");
             return res
                 .status(400)
                 .json({ error: "Missing transcript in request" });
+        }
+
+        if (!apiKey) {
+            console.error("Missing API key in request");
+            return res
+                .status(400)
+                .json({ error: "Missing API key in request" });
         }
 
         console.log("Processing request for video:", videoId);
@@ -66,7 +62,8 @@ app.post("/summarize", async (req, res) => {
             title,
             transcript,
             summaryType,
-            summaryLength
+            summaryLength,
+            apiKey
         );
         console.log("Summary generated successfully");
 
@@ -76,6 +73,50 @@ app.post("/summarize", async (req, res) => {
         return res
             .status(500)
             .json({ error: error.message || "Failed to generate summary" });
+    }
+});
+
+// Q&A endpoint
+app.post("/ask", async (req, res) => {
+    try {
+        console.log("Received Q&A request");
+
+        const { transcript, question, apiKey } = req.body;
+
+        // Validate required fields
+        if (!transcript) {
+            console.error("Missing transcript in request");
+            return res
+                .status(400)
+                .json({ error: "Missing transcript in request" });
+        }
+
+        if (!question) {
+            console.error("Missing question in request");
+            return res
+                .status(400)
+                .json({ error: "Missing question in request" });
+        }
+
+        if (!apiKey) {
+            console.error("Missing API key in request");
+            return res
+                .status(400)
+                .json({ error: "Missing API key in request" });
+        }
+
+        console.log("Processing question:", question);
+        console.log("Transcript length:", transcript.length);
+
+        const answer = await generateAnswer(transcript, question, apiKey);
+        console.log("Answer generated successfully");
+
+        return res.json({ answer });
+    } catch (error) {
+        console.error("Error generating answer:", error);
+        return res
+            .status(500)
+            .json({ error: error.message || "Failed to generate answer" });
     }
 });
 

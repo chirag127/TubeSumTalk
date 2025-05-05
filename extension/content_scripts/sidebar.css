@@ -73,6 +73,44 @@
     gap: 16px;
 }
 
+/* Tabs */
+.tubesumtalk-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--yt-spec-10-percent-layer, #e5e5e5);
+    margin-bottom: 16px;
+}
+
+.tubesumtalk-tab {
+    padding: 8px 16px;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--yt-spec-text-secondary, #606060);
+}
+
+.tubesumtalk-tab:hover {
+    color: var(--yt-spec-text-primary, #0f0f0f);
+}
+
+.tubesumtalk-tab-active {
+    color: var(--yt-spec-brand-button-background, #065fd4);
+    border-bottom-color: var(--yt-spec-brand-button-background, #065fd4);
+}
+
+/* Panels */
+.tubesumtalk-panel {
+    display: none;
+    flex-direction: column;
+    flex: 1;
+}
+
+.tubesumtalk-panel-active {
+    display: flex;
+}
+
 .tubesumtalk-video-title {
     font-weight: 500;
     font-size: 16px;
@@ -254,6 +292,184 @@
     font-size: 14px;
 }
 
+.tubesumtalk-error-icon {
+    font-size: 24px;
+    margin-bottom: 8px;
+    text-align: center;
+}
+
+/* Summary options */
+.tubesumtalk-summary-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.tubesumtalk-select-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    min-width: 100px;
+}
+
+.tubesumtalk-select-group label {
+    font-size: 12px;
+    color: var(--yt-spec-text-secondary, #606060);
+}
+
+.tubesumtalk-select-group select {
+    padding: 6px 8px;
+    border-radius: 4px;
+    border: 1px solid var(--yt-spec-10-percent-layer, #e5e5e5);
+    background-color: var(--yt-spec-base-background, #fff);
+    color: var(--yt-spec-text-primary, #0f0f0f);
+    font-size: 14px;
+}
+
+.tubesumtalk-button {
+    background-color: var(--yt-spec-brand-button-background, #065fd4);
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 14px;
+    align-self: flex-end;
+}
+
+.tubesumtalk-button:hover {
+    background-color: var(--yt-spec-brand-button-background-hover, #0b57d0);
+}
+
+/* Q&A styles */
+.tubesumtalk-qa-form {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.tubesumtalk-qa-form textarea {
+    padding: 12px;
+    border-radius: 4px;
+    border: 1px solid var(--yt-spec-10-percent-layer, #e5e5e5);
+    background-color: var(--yt-spec-base-background, #fff);
+    color: var(--yt-spec-text-primary, #0f0f0f);
+    font-size: 14px;
+    resize: vertical;
+    min-height: 80px;
+    font-family: "Roboto", "Arial", sans-serif;
+}
+
+.tubesumtalk-qa-form button {
+    align-self: flex-end;
+}
+
+.tubesumtalk-qa-container {
+    flex: 1;
+    overflow-y: auto;
+    background-color: var(--yt-spec-brand-background-solid, #f9f9f9);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+}
+
+.tubesumtalk-answer {
+    line-height: 1.6;
+    font-size: 14px;
+    color: var(--yt-spec-text-primary, #0f0f0f);
+}
+
+.tubesumtalk-placeholder {
+    color: var(--yt-spec-text-secondary, #606060);
+    font-style: italic;
+    text-align: center;
+    padding: 24px 0;
+}
+
+/* Settings panel */
+.tubesumtalk-settings-group {
+    margin-bottom: 24px;
+}
+
+.tubesumtalk-settings-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.tubesumtalk-api-key-input {
+    display: flex;
+    position: relative;
+}
+
+.tubesumtalk-api-key-input input {
+    flex: 1;
+    padding: 8px 40px 8px 12px;
+    border-radius: 4px;
+    border: 1px solid var(--yt-spec-10-percent-layer, #e5e5e5);
+    background-color: var(--yt-spec-base-background, #fff);
+    color: var(--yt-spec-text-primary, #0f0f0f);
+    font-size: 14px;
+}
+
+.tubesumtalk-icon-button {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 4px;
+}
+
+.tubesumtalk-help-text {
+    font-size: 12px;
+    color: var(--yt-spec-text-secondary, #606060);
+    margin-top: 4px;
+}
+
+.tubesumtalk-help-text a {
+    color: var(--yt-spec-brand-button-background, #065fd4);
+    text-decoration: none;
+}
+
+.tubesumtalk-help-text a:hover {
+    text-decoration: underline;
+}
+
+.tubesumtalk-range-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.tubesumtalk-range-group input {
+    flex: 1;
+}
+
+.tubesumtalk-settings-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+.tubesumtalk-settings-status {
+    font-size: 14px;
+}
+
+.tubesumtalk-success {
+    color: #34a853;
+}
+
 .tubesumtalk-loading {
     display: flex;
     flex-direction: column;
@@ -356,38 +572,85 @@
 }
 
 /* Dark mode support */
-html[dark] .tubesumtalk-sidebar {
+html[dark] .tubesumtalk-sidebar,
+.tubesumtalk-dark-theme {
     background-color: var(--yt-spec-base-background, #0f0f0f);
     color: var(--yt-spec-text-primary, #fff);
     border-left-color: var(--yt-spec-10-percent-layer, #333);
 }
 
-html[dark] .tubesumtalk-header {
+html[dark] .tubesumtalk-header,
+.tubesumtalk-dark-theme .tubesumtalk-header {
     background-color: var(--yt-spec-brand-background-primary, #0f0f0f);
     border-bottom-color: var(--yt-spec-10-percent-layer, #333);
 }
 
-html[dark] .tubesumtalk-summary-container {
+html[dark] .tubesumtalk-summary-container,
+html[dark] .tubesumtalk-qa-container,
+.tubesumtalk-dark-theme .tubesumtalk-summary-container,
+.tubesumtalk-dark-theme .tubesumtalk-qa-container {
     background-color: var(--yt-spec-brand-background-solid, #212121);
 }
 
-html[dark] .tubesumtalk-controls {
+html[dark] .tubesumtalk-controls,
+.tubesumtalk-dark-theme .tubesumtalk-controls {
     border-top-color: var(--yt-spec-10-percent-layer, #333);
 }
 
-html[dark] .tubesumtalk-voice-select {
+html[dark] .tubesumtalk-voice-select,
+html[dark] .tubesumtalk-select-group select,
+html[dark] .tubesumtalk-qa-form textarea,
+html[dark] .tubesumtalk-api-key-input input,
+.tubesumtalk-dark-theme .tubesumtalk-voice-select,
+.tubesumtalk-dark-theme .tubesumtalk-select-group select,
+.tubesumtalk-dark-theme .tubesumtalk-qa-form textarea,
+.tubesumtalk-dark-theme .tubesumtalk-api-key-input input {
     background-color: var(--yt-spec-base-background, #0f0f0f);
     border-color: var(--yt-spec-10-percent-layer, #333);
+    color: var(--yt-spec-text-primary, #fff);
 }
 
-html[dark] .tubesumtalk-settings-content {
+html[dark] .tubesumtalk-tabs,
+.tubesumtalk-dark-theme .tubesumtalk-tabs {
+    border-bottom-color: var(--yt-spec-10-percent-layer, #333);
+}
+
+html[dark] .tubesumtalk-tab:not(.tubesumtalk-tab-active),
+.tubesumtalk-dark-theme .tubesumtalk-tab:not(.tubesumtalk-tab-active) {
+    color: var(--yt-spec-text-secondary, #aaa);
+}
+
+html[dark] .tubesumtalk-tab:hover:not(.tubesumtalk-tab-active),
+.tubesumtalk-dark-theme .tubesumtalk-tab:hover:not(.tubesumtalk-tab-active) {
+    color: var(--yt-spec-text-primary, #fff);
+}
+
+html[dark] .tubesumtalk-placeholder,
+.tubesumtalk-dark-theme .tubesumtalk-placeholder {
+    color: var(--yt-spec-text-secondary, #aaa);
+}
+
+html[dark] .tubesumtalk-help-text,
+.tubesumtalk-dark-theme .tubesumtalk-help-text {
+    color: var(--yt-spec-text-secondary, #aaa);
+}
+
+html[dark] .tubesumtalk-select-group label,
+.tubesumtalk-dark-theme .tubesumtalk-select-group label {
+    color: var(--yt-spec-text-secondary, #aaa);
+}
+
+html[dark] .tubesumtalk-settings-content,
+.tubesumtalk-dark-theme .tubesumtalk-settings-content {
     background-color: var(--yt-spec-base-background, #0f0f0f);
 }
 
-html[dark] .tubesumtalk-cancel {
+html[dark] .tubesumtalk-cancel,
+.tubesumtalk-dark-theme .tubesumtalk-cancel {
     background-color: var(--yt-spec-10-percent-layer, #333);
 }
 
-html[dark] .tubesumtalk-cancel:hover {
+html[dark] .tubesumtalk-cancel:hover,
+.tubesumtalk-dark-theme .tubesumtalk-cancel:hover {
     background-color: var(--yt-spec-15-percent-layer, #444);
 }

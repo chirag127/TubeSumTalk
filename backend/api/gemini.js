@@ -1,44 +1,34 @@
 /**
  * Gemini API Integration
- * Handles communication with the Gemini 2.0 Flash Lite API
+ * Handles communication with the Gemini 2.5 Flash Preview API
  */
 
-const { GoogleGenerativeAI } = require("@google/generative-ai");
-
-// Initialize the Google Generative AI with API key
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const { GoogleGenAI } = require("@google/genai");
 
 /**
- * Generate a summary of a YouTube video transcript using Gemini 2.0 Flash Lite
+ * Generate a summary of a YouTube video transcript using Gemini 2.5 Flash Preview
  *
  * @param {string} title - The title of the video
  * @param {string} transcript - The transcript of the video
  * @param {string} summaryType - The type of summary to generate (bullet, brief, detailed, key-points, chapter)
  * @param {string} summaryLength - The length of the summary (short, medium, long)
+ * @param {string} apiKey - The user's Gemini API key
  * @returns {Promise<string>} The generated summary
  */
 async function generateSummary(
     title,
     transcript,
     summaryType = "bullet",
-    summaryLength = "medium"
+    summaryLength = "medium",
+    apiKey
 ) {
     try {
         console.log("Generating summary for video:", title);
-        console.log("gemini api key:", process.env.GEMINI_API_KEY);
 
-        // Check if API key is set
-        if (!process.env.GEMINI_API_KEY) {
-            throw new Error(
-                "GEMINI_API_KEY is not set in environment variables"
-            );
+        // Check if API key is provided
+        if (!apiKey) {
+            throw new Error("API key is required");
         }
-
-        console.log("Creating Gemini model...");
-        // Create the model
-        const model = genAI.getGenerativeModel({
-            model: "gemini-2.0-flash-lite",
-        });
 
         // Create the prompt based on summary type and length
         let promptInstructions = "";
@@ -87,7 +77,7 @@ async function generateSummary(
         }
 
         // Create the prompt
-        const prompt = `You are provided the title and transcript of a Youtube video in triple quotes.
+        const inputText = `You are provided the title and transcript of a Youtube video in triple quotes.
 
 ${promptInstructions}
 ${outputLength}
@@ -98,29 +88,49 @@ Title: """${title}"""
 Transcript: """${transcript}"""
 `;
 
-        // Generate the summary
-        const generationConfig = {
-            temperature: 0.7,
-            topP: 0.95,
-            topK: 40,
-            maxOutputTokens: 1024,
-        };
-
-        console.log("Sending request to Gemini API...");
-        const result = await model.generateContent({
-            contents: [{ role: "user", parts: [{ text: prompt }] }],
-            generationConfig,
+        // Initialize the Gemini API with the user's API key
+        const ai = new GoogleGenAI({
+            apiKey: apiKey,
         });
 
+        const config = {
+            responseMimeType: "text/plain",
+        };
+
+        const model = "gemini-2.5-flash-preview-04-17";
+
+        const contents = [
+            {
+                role: "user",
+                parts: [
+                    {
+                        text: inputText,
+                    },
+                ],
+            },
+        ];
+
+        console.log("Sending request to Gemini API...");
+
+        let fullResponse = "";
+        const response = await ai.models.generateContentStream({
+            model,
+            config,
+            contents,
+        });
+
+        for await (const chunk of response) {
+            fullResponse += chunk.text;
+        }
+
         console.log("Received response from Gemini API");
-        const response = result.response;
-        return response.text();
+        return fullResponse;
     } catch (error) {
         console.error("Error calling Gemini API:", error);
         // More detailed error message
         if (error.message && error.message.includes("API key")) {
             throw new Error(
-                "Invalid or missing Gemini API key. Please check your environment variables."
+                "Invalid Gemini API key. Please check your API key and try again."
             );
         } else {
             throw new Error(
@@ -131,6 +141,86 @@ Transcript: """${transcript}"""
     }
 }
 
+/**
+ * Generate an answer to a question about a YouTube video transcript using Gemini 2.5 Flash Preview
+ *
+ * @param {string} transcript - The transcript of the video
+ * @param {string} question - The user's question about the video
+ * @param {string} apiKey - The user's Gemini API key
+ * @returns {Promise<string>} The generated answer
+ */
+async function generateAnswer(transcript, question, apiKey) {
+    try {
+        console.log("Generating answer for question:", question);
+
+        // Check if API key is provided
+        if (!apiKey) {
+            throw new Error("API key is required");
+        }
+
+        // Create the prompt
+        const inputText = `You are provided with a YouTube video transcript and a question about the video.
+Please answer the question based only on the information in the transcript.
+Format your answer as markdown text.
+
+Question: """${question}"""
+Transcript: """${transcript}"""
+`;
+
+        // Initialize the Gemini API with the user's API key
+        const ai = new GoogleGenAI({
+            apiKey: apiKey,
+        });
+
+        const config = {
+            responseMimeType: "text/plain",
+        };
+
+        const model = "gemini-2.5-flash-preview-04-17";
+
+        const contents = [
+            {
+                role: "user",
+                parts: [
+                    {
+                        text: inputText,
+                    },
+                ],
+            },
+        ];
+
+        console.log("Sending request to Gemini API...");
+
+        let fullResponse = "";
+        const response = await ai.models.generateContentStream({
+            model,
+            config,
+            contents,
+        });
+
+        for await (const chunk of response) {
+            fullResponse += chunk.text;
+        }
+
+        console.log("Received response from Gemini API");
+        return fullResponse;
+    } catch (error) {
+        console.error("Error calling Gemini API:", error);
+        // More detailed error message
+        if (error.message && error.message.includes("API key")) {
+            throw new Error(
+                "Invalid Gemini API key. Please check your API key and try again."
+            );
+        } else {
+            throw new Error(
+                "Failed to generate answer: " +
+                    (error.message || "Unknown error")
+            );
+        }
+    }
+}
+
 module.exports = {
     generateSummary,
+    generateAnswer,
 };

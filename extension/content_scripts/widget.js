@@ -454,7 +454,11 @@ class TubeSumTalkWidget {
             "#tubesumtalk-summary"
         );
         if (summaryElement) {
-            summaryElement.innerHTML = `<div class="tubesumtalk-error">${message}</div>`;
+            summaryElement.innerHTML = `
+            <div class="tubesumtalk-error">
+                <div class="tubesumtalk-error-icon">⚠️</div>
+                <div>${message}</div>
+            </div>`;
         }
     }
 
