@@ -1,12 +1,12 @@
 /**
  * Gemini API Integration
- * Handles communication with the Gemini 2.5 Flash Preview API
+ * Handles communication with the Gemini API
  */
 
 const { GoogleGenAI } = require("@google/genai");
 
 /**
- * Generate a summary of a YouTube video transcript using Gemini 2.5 Flash Preview
+ * Generate a summary of a YouTube video transcript using Gemini API
  *
  * @param {string} title - The title of the video
  * @param {string} transcript - The transcript of the video
@@ -93,11 +93,11 @@ Transcript: """${transcript}"""
             apiKey: apiKey,
         });
 
-        const config = {
-            responseMimeType: "text/plain",
-        };
+        // Configuration for the Gemini API
+        const config = {};
 
-        const model = "gemini-2.5-flash-preview-04-17";
+        // Use Gemini 2.0 Flash Lite model
+        const model = "gemini-1.5-flash";
 
         const contents = [
             {
@@ -132,7 +132,12 @@ Transcript: """${transcript}"""
             throw new Error(
                 "Invalid Gemini API key. Please check your API key and try again."
             );
+        } else if (error.message && error.message.includes("404")) {
+            throw new Error(
+                "Model not found. The Gemini model may be unavailable or incorrect. Please check your API key permissions."
+            );
         } else {
+            console.error("Detailed error:", error);
             throw new Error(
                 "Failed to generate summary: " +
                     (error.message || "Unknown error")
@@ -142,7 +147,7 @@ Transcript: """${transcript}"""
 }
 
 /**
- * Generate an answer to a question about a YouTube video transcript using Gemini 2.5 Flash Preview
+ * Generate an answer to a question about a YouTube video transcript using Gemini API
  *
  * @param {string} transcript - The transcript of the video
  * @param {string} question - The user's question about the video
@@ -172,11 +177,11 @@ Transcript: """${transcript}"""
             apiKey: apiKey,
         });
 
-        const config = {
-            responseMimeType: "text/plain",
-        };
+        // Configuration for the Gemini API
+        const config = {};
 
-        const model = "gemini-2.5-flash-preview-04-17";
+        // Use Gemini 2.0 Flash Lite model
+        const model = "gemini-1.5-flash";
 
         const contents = [
             {
@@ -211,7 +216,12 @@ Transcript: """${transcript}"""
             throw new Error(
                 "Invalid Gemini API key. Please check your API key and try again."
             );
+        } else if (error.message && error.message.includes("404")) {
+            throw new Error(
+                "Model not found. The Gemini model may be unavailable or incorrect. Please check your API key permissions."
+            );
         } else {
+            console.error("Detailed error:", error);
             throw new Error(
                 "Failed to generate answer: " +
                     (error.message || "Unknown error")

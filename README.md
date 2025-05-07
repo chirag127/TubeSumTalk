@@ -4,7 +4,7 @@
 
 ## ✨ Description
 
-TubeSumTalk is a browser extension that automatically summarizes YouTube videos and reads the summaries aloud with word-by-word highlighting. It uses Google Gemini 2.5 Flash Preview AI to generate concise summaries from video transcripts, saving you time and helping you decide if a video is worth watching in full. You can also ask questions about the video content and get AI-generated answers based on the transcript.
+TubeSumTalk is a browser extension that automatically summarizes YouTube videos and reads the summaries aloud with word-by-word highlighting. It uses Google Gemini 1.5 Flash AI to generate concise summaries from video transcripts, saving you time and helping you decide if a video is worth watching in full. You can also ask questions about the video content and get AI-generated answers based on the transcript.
 
 ## 🚀 Live Demo
 
@@ -15,7 +15,7 @@ Visit our website: [https://chirag127.github.io/TubeSumTalk/](https://chirag127.
 -   **Frontend**: JavaScript, HTML5, CSS3
 -   **Browser APIs**: Chrome Extension API, Web Speech API
 -   **Backend**: Node.js, Express.js
--   **AI**: Google Gemini 2.5 Flash Preview
+-   **AI**: Google Gemini 1.5 Flash
 -   **Version Control**: Git, GitHub
 
 ## 📦 Installation Instructions
@@ -47,6 +47,14 @@ Visit our website: [https://chirag127.github.io/TubeSumTalk/](https://chirag127.
 4. Start the server:
     ```
     npm start
+    ```
+5. (Optional) Test the Gemini API integration:
+    ```
+    npm test
+    ```
+6. (Optional) Test the server endpoints:
+    ```
+    npm run test:server
     ```
 
 ## 🔧 Usage

@@ -1,10 +1,10 @@
 /**
  * Test script for TubeSumTalk backend
- * Tests the Gemini API integration with the new model
+ * Tests the Gemini API integration with the Gemini 1.5 Flash model
  */
 
-require('dotenv').config();
-const { generateSummary, generateAnswer } = require('./api/gemini');
+require("dotenv").config();
+const { generateSummary, generateAnswer } = require("./api/gemini");
 
 // Sample transcript
 const transcript = `
@@ -31,17 +31,24 @@ const apiKey = process.env.TEST_API_KEY || "your_api_key_here";
 async function testSummary() {
     try {
         console.log("Testing summary generation...");
-        
+
         // Test different summary types and lengths
-        const summaryTypes = ["bullet", "brief", "detailed", "key-points", "chapter"];
+        const summaryTypes = [
+            "bullet",
+            "brief",
+            "detailed",
+            "key-points",
+            "chapter",
+        ];
         const summaryLengths = ["short", "medium", "long"];
-        
+
         // Test one combination
         const summaryType = summaryTypes[0]; // bullet
         const summaryLength = summaryLengths[1]; // medium
-        
+
         console.log(`Generating ${summaryLength} ${summaryType} summary...`);
-        
+        console.log("Using model: gemini-1.5-flash");
+
         const summary = await generateSummary(
             title,
             transcript,
@@ -49,12 +56,18 @@ async function testSummary() {
             summaryLength,
             apiKey
         );
-        
+
         console.log("Summary generated successfully:");
         console.log(summary);
-        
+
+        if (!summary || summary.trim() === "") {
+            throw new Error("Generated summary is empty");
+        }
+
+        return summary;
     } catch (error) {
         console.error("Error testing summary generation:", error);
+        throw error;
     }
 }
 
@@ -62,34 +75,49 @@ async function testSummary() {
 async function testQA() {
     try {
         console.log("\nTesting Q&A...");
-        
-        const question = "What files do we need to create for the web application?";
-        
+
+        const question =
+            "What files do we need to create for the web application?";
+
         console.log(`Asking question: "${question}"`);
-        
-        const answer = await generateAnswer(
-            transcript,
-            question,
-            apiKey
-        );
-        
+        console.log("Using model: gemini-1.5-flash");
+
+        const answer = await generateAnswer(transcript, question, apiKey);
+
         console.log("Answer generated successfully:");
         console.log(answer);
-        
+
+        if (!answer || answer.trim() === "") {
+            throw new Error("Generated answer is empty");
+        }
+
+        return answer;
     } catch (error) {
         console.error("Error testing Q&A:", error);
+        throw error;
     }
 }
 
 // Run tests
 async function runTests() {
     if (apiKey === "your_api_key_here") {
-        console.error("Please set your API key in the TEST_API_KEY environment variable or in this file.");
+        console.error(
+            "Please set your API key in the TEST_API_KEY environment variable or in this file."
+        );
         return;
     }
-    
-    await testSummary();
-    await testQA();
+
+    console.log("Testing with Gemini 1.5 Flash model");
+    console.log("API Key:", apiKey ? "Provided" : "Not provided");
+
+    try {
+        await testSummary();
+        await testQA();
+        console.log("\n✅ All tests completed successfully!");
+    } catch (error) {
+        console.error("\n❌ Tests failed:", error);
+        process.exit(1);
+    }
 }
 
 runTests();
