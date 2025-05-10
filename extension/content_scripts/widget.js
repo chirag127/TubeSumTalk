@@ -107,7 +107,14 @@ class TubeSumTalkWidget {
                 <option value="long">Long</option>
               </select>
             </div>
-            <button id="tubesumtalk-generate" class="tubesumtalk-button">Generate</button>
+            <div class="tubesumtalk-button-group">
+              <button id="tubesumtalk-refresh" class="tubesumtalk-icon-button" title="Refresh for current video">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" fill="currentColor"/>
+                </svg>
+              </button>
+              <button id="tubesumtalk-generate" class="tubesumtalk-button">Generate</button>
+            </div>
           </div>
 
           <div class="tubesumtalk-summary-container">
@@ -226,6 +233,16 @@ class TubeSumTalkWidget {
         if (generateButton) {
             generateButton.addEventListener("click", () =>
                 this.generateSummary()
+            );
+        }
+
+        // Refresh button for current video
+        const refreshButton = this.widgetElement.querySelector(
+            "#tubesumtalk-refresh"
+        );
+        if (refreshButton) {
+            refreshButton.addEventListener("click", () =>
+                this.refreshSummary()
             );
         }
 
@@ -514,8 +531,15 @@ class TubeSumTalkWidget {
 
     // Generate a new summary
     generateSummary() {
+        console.log(
+            "Generating new summary for video:",
+            this.videoDetails?.videoId
+        );
+
         if (!this.videoDetails || !window.currentTranscript) {
-            this.showError("No video or transcript available.");
+            const errorMsg = "No video or transcript available.";
+            console.error(errorMsg);
+            this.showError(errorMsg);
             return;
         }
 
@@ -537,6 +561,17 @@ class TubeSumTalkWidget {
             ? summaryLengthSelect.value
             : "medium";
 
+        console.log("Requesting summary with settings:", {
+            videoId: this.videoDetails.videoId,
+            title: this.videoDetails.title,
+            summaryType,
+            summaryLength,
+            transcriptLength: window.currentTranscript.length,
+        });
+
+        // Make sure the summary tab is active
+        this.activateSummaryTab();
+
         // Send message to background script to get summary
         chrome.runtime.sendMessage(
             {
@@ -549,17 +584,32 @@ class TubeSumTalkWidget {
             },
             (response) => {
                 if (response && response.success) {
+                    console.log("Summary received successfully");
                     // Display summary
                     this.setSummary(response.summary);
                 } else {
                     // Display error
-                    this.showError(
+                    const errorMsg =
                         response?.error ||
-                            "Failed to generate summary. Please try again."
-                    );
+                        "Failed to generate summary. Please try again.";
+                    console.error("Summary error:", errorMsg);
+                    this.showError(errorMsg);
                 }
             }
         );
+    }
+
+    // Refresh the current video summary
+    refreshSummary() {
+        console.log("Refreshing summary for current video");
+
+        // If we have a global function to process the current video, use it
+        if (window.TubeSumTalk && window.TubeSumTalk.processCurrentVideo) {
+            window.TubeSumTalk.processCurrentVideo();
+        } else {
+            // Fallback to just regenerating the summary
+            this.generateSummary();
+        }
     }
 
     // Ask a question about the video
@@ -766,6 +816,15 @@ class TubeSumTalkWidget {
     // Set video details
     setVideoDetails(details) {
         this.videoDetails = details;
+
+        // Update the video title in the widget
+        const titleElement = this.widgetElement.querySelector(
+            "#tubesumtalk-video-title"
+        );
+        if (titleElement && details.title) {
+            titleElement.textContent = details.title;
+            console.log("Updated widget title to:", details.title);
+        }
     }
 
     // Set summary
@@ -784,6 +843,41 @@ class TubeSumTalkWidget {
 
             // Store the original markdown as a data attribute for easy access
             summaryElement.setAttribute("data-original-markdown", summary);
+
+            console.log("Summary updated in widget");
+
+            // Make sure the summary tab is active
+            this.activateSummaryTab();
+        }
+    }
+
+    // Activate the summary tab
+    activateSummaryTab() {
+        // Get all tabs and panels
+        const tabs = this.widgetElement.querySelectorAll(".tubesumtalk-tab");
+        const panels =
+            this.widgetElement.querySelectorAll(".tubesumtalk-panel");
+
+        // Remove active class from all tabs and panels
+        tabs.forEach((tab) => tab.classList.remove("tubesumtalk-tab-active"));
+        panels.forEach((panel) =>
+            panel.classList.remove("tubesumtalk-panel-active")
+        );
+
+        // Add active class to summary tab and panel
+        const summaryTab = this.widgetElement.querySelector(
+            "#tubesumtalk-summary-tab"
+        );
+        const summaryPanel = this.widgetElement.querySelector(
+            "#tubesumtalk-summary-panel"
+        );
+
+        if (summaryTab) {
+            summaryTab.classList.add("tubesumtalk-tab-active");
+        }
+
+        if (summaryPanel) {
+            summaryPanel.classList.add("tubesumtalk-panel-active");
         }
     }
 

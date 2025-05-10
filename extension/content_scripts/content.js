@@ -1,21 +1,31 @@
 /**
  * TubeSumTalk Content Script
  * Detects YouTube video pages and initializes the sidebar and widget
+ * Tracks video changes and updates the summary accordingly
  */
 
 // Constants
 const YOUTUBE_VIDEO_REGEX = /^https:\/\/www\.youtube\.com\/watch\?v=.+/;
+const VIDEO_CHECK_INTERVAL = 2000; // Check for video changes every 2 seconds
 
 // State
 let widget = null;
 let currentVideoId = null;
 let isProcessing = false;
 let currentTranscript = null;
+let videoCheckInterval = null;
+let lastCheckedUrl = null;
 
-// Main initialization function
+/**
+ * Main initialization function
+ * Sets up the extension and initializes video monitoring
+ */
 async function init() {
+    console.log("TubeSumTalk initializing...");
+
     // Check if we're on a YouTube video page
     if (!YOUTUBE_VIDEO_REGEX.test(window.location.href)) {
+        console.log("Not a YouTube video page, exiting");
         return;
     }
 
@@ -24,9 +34,71 @@ async function init() {
         window.TubeSumTalkTheme.initTheme();
     }
 
+    // Initialize the widget if it doesn't exist
+    if (!widget) {
+        widget = await new TubeSumTalkWidget().init();
+        if (!widget) {
+            console.error("Failed to initialize widget");
+            return;
+        }
+        console.log("Widget initialized successfully");
+    }
+
+    // Start monitoring for video changes
+    startVideoMonitoring();
+
+    // Process the current video
+    processCurrentVideo();
+}
+
+/**
+ * Start monitoring for video changes
+ * This handles both URL changes and in-page video changes
+ */
+function startVideoMonitoring() {
+    // Clear any existing interval
+    if (videoCheckInterval) {
+        clearInterval(videoCheckInterval);
+    }
+
+    // Store the current URL
+    lastCheckedUrl = window.location.href;
+
+    // Set up interval to check for video changes
+    videoCheckInterval = setInterval(() => {
+        // Check if URL has changed
+        if (window.location.href !== lastCheckedUrl) {
+            console.log("URL changed, processing new video");
+            lastCheckedUrl = window.location.href;
+
+            // Check if we're still on a YouTube video page
+            if (YOUTUBE_VIDEO_REGEX.test(window.location.href)) {
+                processCurrentVideo();
+            }
+            return;
+        }
+
+        // Check if video ID has changed without URL change (e.g., through YouTube's navigation)
+        const videoDetails = getVideoDetails();
+        if (videoDetails.videoId && videoDetails.videoId !== currentVideoId) {
+            console.log(
+                "Video changed without URL change, processing new video"
+            );
+            processCurrentVideo();
+        }
+    }, VIDEO_CHECK_INTERVAL);
+
+    console.log("Video monitoring started");
+}
+
+/**
+ * Process the current video
+ * Gets video details, transcript, and generates summary
+ */
+async function processCurrentVideo() {
     // Get video details
     const videoDetails = getVideoDetails();
-    console.log("Video details:", videoDetails);
+    console.log("Processing video:", videoDetails);
 
     // If no video ID, exit
     if (!videoDetails.videoId) {
@@ -42,20 +114,13 @@ async function init() {
 
     // If we've already processed this video, don't do it again
     if (videoDetails.videoId === currentVideoId && widget) {
+        console.log("Video already processed, skipping");
         return;
     }
 
     // Update current video ID
     currentVideoId = videoDetails.videoId;
-
-    // If widget doesn't exist, create it
-    if (!widget) {
-        widget = await new TubeSumTalkWidget().init();
-        if (!widget) {
-            console.error("Failed to initialize widget");
-            return;
-        }
-    }
+    console.log("Current video ID updated to:", currentVideoId);
 
     // Set video details in widget
     widget.setVideoDetails(videoDetails);
@@ -65,6 +130,7 @@ async function init() {
 
     // Prevent multiple simultaneous processing
     if (isProcessing) {
+        console.log("Already processing a video, waiting");
         return;
     }
 
@@ -72,10 +138,12 @@ async function init() {
 
     try {
         // Get available transcript languages
+        console.log("Getting transcript languages...");
         const languages = await getTranscriptLanguages();
 
         if (!languages || languages.length === 0) {
             const errorMessage = "No transcript available for this video.";
+            console.error(errorMessage);
             widget.showError(errorMessage);
             isProcessing = false;
             return;
@@ -84,13 +152,16 @@ async function init() {
         // Default to English or first available language
         const defaultLanguage =
             languages.find((lang) => lang.code === "en") || languages[0];
+        console.log("Using language:", defaultLanguage.name);
 
         // Get transcript for the selected language
+        console.log("Getting transcript...");
         const transcript = await getTranscript(defaultLanguage.url);
 
         if (!transcript || transcript.length === 0) {
             const errorMessage =
                 "Failed to get transcript. Please try another video.";
+            console.error(errorMessage);
             widget.showError(errorMessage);
             isProcessing = false;
             return;
@@ -98,9 +169,11 @@ async function init() {
 
         // Combine transcript segments into a single text
         const transcriptText = transcript.map((item) => item.text).join(" ");
+        console.log("Transcript retrieved, length:", transcriptText.length);
 
         // Store transcript for later use (e.g., Q&A)
         currentTranscript = transcriptText;
+        window.currentTranscript = transcriptText; // Make available globally
 
         // Get summary settings
         chrome.storage.sync.get(
@@ -115,6 +188,7 @@ async function init() {
                 });
 
                 // Send message to background script to get summary
+                console.log("Requesting summary from backend...");
                 chrome.runtime.sendMessage(
                     {
                         action: "summarize",
@@ -128,6 +202,7 @@ async function init() {
                         isProcessing = false;
 
                         if (response && response.success) {
+                            console.log("Summary received successfully");
                             // Display summary in widget
                             widget.setSummary(response.summary);
                         } else {
@@ -135,6 +210,7 @@ async function init() {
                             const errorMessage =
                                 response?.error ||
                                 "Failed to generate summary. Please try again.";
+                            console.error("Summary error:", errorMessage);
                             widget.showError(errorMessage);
                         }
                     }
@@ -149,7 +225,11 @@ async function init() {
     }
 }
 
-// Function to ask a question about the video
+/**
+ * Ask a question about the current video
+ * @param {string} question - The question to ask
+ * @returns {Promise<string>} - The answer from the Gemini API
+ */
 function askQuestion(question) {
     if (!currentTranscript) {
         console.error("No transcript available for Q&A");
@@ -158,6 +238,7 @@ function askQuestion(question) {
         );
     }
 
+    console.log("Asking question:", question);
     return new Promise((resolve, reject) => {
         chrome.runtime.sendMessage(
             {
@@ -167,25 +248,41 @@ function askQuestion(question) {
             },
             (response) => {
                 if (response && response.success) {
+                    console.log("Answer received successfully");
                     resolve(response.answer);
                 } else {
-                    reject(
-                        new Error(
-                            response?.error ||
-                                "Failed to get answer. Please try again."
-                        )
-                    );
+                    const errorMessage =
+                        response?.error ||
+                        "Failed to get answer. Please try again.";
+                    console.error("Q&A error:", errorMessage);
+                    reject(new Error(errorMessage));
                 }
             }
         );
     });
 }
 
+/**
+ * Clean up resources when the extension is unloaded
+ */
+function cleanup() {
+    if (videoCheckInterval) {
+        clearInterval(videoCheckInterval);
+        videoCheckInterval = null;
+    }
+
+    // Additional cleanup if needed
+    console.log("TubeSumTalk cleanup complete");
+}
+
 // Initialize on page load
 init();
 
 // Listen for YouTube navigation events
-window.addEventListener("yt-navigate-finish", init);
+window.addEventListener("yt-navigate-finish", () => {
+    console.log("YouTube navigation event detected");
+    init();
+});
 
 // Listen for messages from background script
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
@@ -193,9 +290,14 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         message.action === "updateSummary" &&
         message.videoId === currentVideoId
     ) {
+        console.log("Received summary update for current video");
         if (widget) {
             widget.setSummary(message.summary);
         }
+        sendResponse({ success: true });
+    } else if (message.action === "refreshVideo") {
+        console.log("Received refresh request");
+        processCurrentVideo();
         sendResponse({ success: true });
     }
 
@@ -203,7 +305,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true;
 });
 
-// Make askQuestion function available to sidebar and widget
+// Clean up when the window is unloaded
+window.addEventListener("unload", cleanup);
+
+// Make functions available to sidebar and widget
 window.TubeSumTalk = {
     askQuestion,
+    processCurrentVideo,
 };

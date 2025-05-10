@@ -94,9 +94,13 @@ Transcript: """${transcript}"""
         });
 
         // Configuration for the Gemini API
-        const config = {};
+        const config = {
+            // Note: responseMimeType is not supported in Gemini 2.0 Flash Lite
+            // We'll handle the response formatting in our code
+        };
 
-        // Use Gemini 2.0 Flash Lite model
+        // Use the latest Gemini model
+        // Using gemini-1.5-flash for better performance and reliability
         const model = "gemini-1.5-flash";
 
         const contents = [
@@ -110,7 +114,7 @@ Transcript: """${transcript}"""
             },
         ];
 
-        console.log("Sending request to Gemini API...");
+        console.log("Sending request to Gemini API using model:", model);
 
         let fullResponse = "";
         const response = await ai.models.generateContentStream({
@@ -124,6 +128,12 @@ Transcript: """${transcript}"""
         }
 
         console.log("Received response from Gemini API");
+
+        // Ensure the response is properly formatted
+        if (!fullResponse || fullResponse.trim() === "") {
+            throw new Error("Received empty response from Gemini API");
+        }
+
         return fullResponse;
     } catch (error) {
         console.error("Error calling Gemini API:", error);
@@ -135,6 +145,14 @@ Transcript: """${transcript}"""
         } else if (error.message && error.message.includes("404")) {
             throw new Error(
                 "Model not found. The Gemini model may be unavailable or incorrect. Please check your API key permissions."
+            );
+        } else if (error.message && error.message.includes("429")) {
+            throw new Error(
+                "Rate limit exceeded. Please try again later or check your API quota."
+            );
+        } else if (error.message && error.message.includes("400")) {
+            throw new Error(
+                "Bad request. The transcript might be too long or contain invalid characters."
             );
         } else {
             console.error("Detailed error:", error);
@@ -167,6 +185,7 @@ async function generateAnswer(transcript, question, apiKey) {
         const inputText = `You are provided with a YouTube video transcript and a question about the video.
 Please answer the question based only on the information in the transcript.
 Format your answer as markdown text.
+If the transcript doesn't contain information to answer the question, clearly state that.
 
 Question: """${question}"""
 Transcript: """${transcript}"""
@@ -178,9 +197,13 @@ Transcript: """${transcript}"""
         });
 
         // Configuration for the Gemini API
-        const config = {};
+        const config = {
+            // Note: responseMimeType is not supported in Gemini 2.0 Flash Lite
+            // We'll handle the response formatting in our code
+        };
 
-        // Use Gemini 2.0 Flash Lite model
+        // Use the latest Gemini model
+        // Using gemini-1.5-flash for better performance and reliability
         const model = "gemini-1.5-flash";
 
         const contents = [
@@ -194,7 +217,7 @@ Transcript: """${transcript}"""
             },
         ];
 
-        console.log("Sending request to Gemini API...");
+        console.log("Sending request to Gemini API using model:", model);
 
         let fullResponse = "";
         const response = await ai.models.generateContentStream({
@@ -208,6 +231,12 @@ Transcript: """${transcript}"""
         }
 
         console.log("Received response from Gemini API");
+
+        // Ensure the response is properly formatted
+        if (!fullResponse || fullResponse.trim() === "") {
+            throw new Error("Received empty response from Gemini API");
+        }
+
         return fullResponse;
     } catch (error) {
         console.error("Error calling Gemini API:", error);
@@ -219,6 +248,14 @@ Transcript: """${transcript}"""
         } else if (error.message && error.message.includes("404")) {
             throw new Error(
                 "Model not found. The Gemini model may be unavailable or incorrect. Please check your API key permissions."
+            );
+        } else if (error.message && error.message.includes("429")) {
+            throw new Error(
+                "Rate limit exceeded. Please try again later or check your API quota."
+            );
+        } else if (error.message && error.message.includes("400")) {
+            throw new Error(
+                "Bad request. The question or transcript might contain invalid characters."
             );
         } else {
             console.error("Detailed error:", error);

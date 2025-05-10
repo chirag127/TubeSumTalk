@@ -26,12 +26,15 @@ async function getTranscriptLanguages() {
 
 // Get transcript data from YouTube's ytInitialPlayerResponse
 async function getTranscriptData() {
+    console.log("Getting transcript data...");
+
     // Try to get the data from the window object
     if (
         window.ytInitialPlayerResponse &&
         window.ytInitialPlayerResponse.captions &&
         window.ytInitialPlayerResponse.captions.playerCaptionsTracklistRenderer
     ) {
+        console.log("Found transcript data in window.ytInitialPlayerResponse");
         return {
             captionTracks:
                 window.ytInitialPlayerResponse.captions
@@ -40,6 +43,7 @@ async function getTranscriptData() {
     }
 
     // If not found in window object, try to extract from script tags
+    console.log("Searching for transcript data in script tags...");
     for (const script of document.querySelectorAll("script")) {
         const text = script.textContent;
         if (text && text.includes("ytInitialPlayerResponse")) {
@@ -53,6 +57,7 @@ async function getTranscriptData() {
                     data.captions &&
                     data.captions.playerCaptionsTracklistRenderer
                 ) {
+                    console.log("Found transcript data in script tag");
                     return {
                         captionTracks:
                             data.captions.playerCaptionsTracklistRenderer
@@ -65,6 +70,69 @@ async function getTranscriptData() {
         }
     }
 
+    // Try to find transcript data in the page source
+    console.log("Trying to find transcript data in page source...");
+    try {
+        // Look for any object that might contain caption tracks
+        const possibleContainers = [
+            'window["ytInitialPlayerResponse"]',
+            "ytInitialPlayerResponse",
+            "ytPlayerConfig",
+        ];
+
+        for (const container of possibleContainers) {
+            const regex = new RegExp(`${container}\\s*=\\s*({.*?});`, "s");
+            const match = document.documentElement.innerHTML.match(regex);
+
+            if (match && match[1]) {
+                try {
+                    const data = JSON.parse(match[1]);
+                    if (
+                        data.captions &&
+                        data.captions.playerCaptionsTracklistRenderer &&
+                        data.captions.playerCaptionsTracklistRenderer
+                            .captionTracks
+                    ) {
+                        console.log(`Found transcript data in ${container}`);
+                        return {
+                            captionTracks:
+                                data.captions.playerCaptionsTracklistRenderer
+                                    .captionTracks,
+                        };
+                    }
+                } catch (e) {
+                    console.error(`Error parsing ${container}:`, e);
+                }
+            }
+        }
+    } catch (error) {
+        console.error(
+            "Error searching page source for transcript data:",
+            error
+        );
+    }
+
+    // If we still can't find the transcript data, wait a bit and try again
+    // This helps with YouTube's dynamic loading
+    if (document.readyState !== "complete") {
+        console.log("Page not fully loaded, waiting before retrying...");
+        return new Promise((resolve, reject) => {
+            window.addEventListener("load", async () => {
+                try {
+                    // Try again after page is fully loaded
+                    console.log(
+                        "Page loaded, retrying transcript data extraction"
+                    );
+                    const data = await getTranscriptData();
+                    resolve(data);
+                } catch (error) {
+                    reject(error);
+                }
+            });
+        });
+    }
+
+    console.error("Could not find transcript data");
     throw new Error("Could not find transcript data");
 }
 
@@ -140,6 +208,36 @@ function getVideoDetails() {
     const urlParams = new URLSearchParams(window.location.search);
     const videoId = urlParams.get("v");
 
+    console.log("Getting details for video ID:", videoId);
+
+    // Try to get video details from YouTube's ytInitialPlayerResponse
+    try {
+        if (
+            window.ytInitialPlayerResponse &&
+            window.ytInitialPlayerResponse.videoDetails
+        ) {
+            const videoDetails = window.ytInitialPlayerResponse.videoDetails;
+            console.log(
+                "Found video details in ytInitialPlayerResponse:",
+                videoDetails.title
+            );
+
+            return {
+                videoId: videoDetails.videoId,
+                title: videoDetails.title,
+                author: videoDetails.author,
+            };
+        }
+    } catch (error) {
+        console.error(
+            "Error getting video details from ytInitialPlayerResponse:",
+            error
+        );
+    }
+
+    // Fallback to DOM selectors if ytInitialPlayerResponse is not available
+    console.log("Falling back to DOM selectors for video details");
+
     // Get video title - try multiple selectors to handle YouTube's DOM structure
     let title = "Unknown Title";
     const titleSelectors = [
@@ -149,6 +247,8 @@ function getVideoDetails() {
         "#title", // Another possible selector
         "ytd-watch-metadata h1", // Another possible selector
         "h1.style-scope.ytd-watch-metadata", // More specific selector
+        "#above-the-fold #title", // Another possible selector
+        "#primary-inner #title", // Another possible selector
     ];
 
     for (const selector of titleSelectors) {
@@ -172,6 +272,16 @@ function getVideoDetails() {
                 break;
             }
         }
+
+        // Try to extract from page title
+        if (title === "Unknown Title" && document.title) {
+            // YouTube titles are usually in the format "Title - YouTube"
+            const pageTitle = document.title.replace(" - YouTube", "").trim();
+            if (pageTitle) {
+                title = pageTitle;
+                console.log("Found title from page title:", title);
+            }
+        }
     }
 
     console.log("Video title:", title);
@@ -184,6 +294,8 @@ function getVideoDetails() {
         "#owner #channel-name", // Another possible selector
         "ytd-channel-name", // Another possible selector
         "ytd-video-owner-renderer #channel-name", // More specific selector
+        "#above-the-fold #channel-name", // Another possible selector
+        "#primary-inner #channel-name", // Another possible selector
     ];
 
     for (const selector of authorSelectors) {

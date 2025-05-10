@@ -11,9 +11,12 @@ const API_BASE_URL = "https://tubesumtalk.onrender.com";
 // Listen for messages from content scripts
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.action === "summarize") {
+        console.log("Received summarize request for video:", message.videoId);
+
         // Get API key from storage
         chrome.storage.sync.get(["apiKey"], (result) => {
             if (!result.apiKey) {
+                console.error("No API key found in storage");
                 sendResponse({
                     success: false,
                     error: "No API key found. Please add your Gemini API key in the extension settings.",
@@ -21,6 +24,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 return;
             }
 
+            console.log("Calling backend API to summarize video");
             summarizeVideo(
                 message.videoId,
                 message.transcript,
@@ -30,12 +34,20 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 result.apiKey
             )
                 .then((summary) => {
+                    console.log(
+                        "Summary generated successfully for video:",
+                        message.videoId
+                    );
                     sendResponse({ success: true, summary });
 
                     // Also send to any open tabs with the same video
                     chrome.tabs.query({}, (tabs) => {
                         tabs.forEach((tab) => {
                             if (tab.id !== sender.tab.id) {
+                                console.log(
+                                    "Sending summary update to tab:",
+                                    tab.id
+                                );
                                 chrome.tabs
                                     .sendMessage(tab.id, {
                                         action: "updateSummary",
@@ -60,9 +72,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     }
 
     if (message.action === "askQuestion") {
+        console.log("Received Q&A request for question:", message.question);
+
         // Get API key from storage
         chrome.storage.sync.get(["apiKey"], (result) => {
             if (!result.apiKey) {
+                console.error("No API key found in storage");
                 sendResponse({
                     success: false,
                     error: "No API key found. Please add your Gemini API key in the extension settings.",
@@ -70,8 +85,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 return;
             }
 
+            console.log("Calling backend API to answer question");
             askQuestion(message.transcript, message.question, result.apiKey)
                 .then((answer) => {
+                    console.log("Answer generated successfully");
                     sendResponse({ success: true, answer });
                 })
                 .catch((error) => {
@@ -81,6 +98,29 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         });
 
         // Return true to indicate we'll send a response asynchronously
+        return true;
+    }
+
+    // Handle refresh video request
+    if (message.action === "refreshVideo") {
+        console.log("Received refresh video request");
+
+        // Send message to all tabs to refresh the current video
+        chrome.tabs.query({}, (tabs) => {
+            tabs.forEach((tab) => {
+                if (tab.id !== sender.tab.id) {
+                    chrome.tabs
+                        .sendMessage(tab.id, {
+                            action: "refreshVideo",
+                        })
+                        .catch(() => {
+                            // Ignore errors (tab might not have content script)
+                        });
+                }
+            });
+        });
+
+        sendResponse({ success: true });
         return true;
     }
 
@@ -161,6 +201,21 @@ async function summarizeVideo(
             summaryLength,
         });
 
+        // Validate inputs
+        if (!transcript || transcript.trim() === "") {
+            throw new Error("No transcript provided. Cannot generate summary.");
+        }
+
+        if (!title || title.trim() === "") {
+            console.warn("No title provided, using video ID as title");
+            title = `YouTube Video ${videoId}`;
+        }
+
+        if (!videoId) {
+            throw new Error("No video ID provided. Cannot generate summary.");
+        }
+
+        // Make the API request
         const response = await fetch(`${API_BASE_URL}/summarize`, {
             method: "POST",
             headers: {
@@ -194,6 +249,11 @@ async function summarizeVideo(
         const data = await response.json();
         console.log("Received summary from API");
 
+        // Validate the response
+        if (!data.summary || data.summary.trim() === "") {
+            throw new Error("Received empty summary from API");
+        }
+
         // Return the summary as is - it will be parsed as markdown in the sidebar
         return data.summary;
     } catch (error) {
@@ -208,9 +268,19 @@ async function askQuestion(transcript, question, apiKey) {
         console.log(`Sending request to backend API at ${API_BASE_URL}/ask`);
         console.log("Request data:", {
             question,
-            transcriptLength: transcript.length,
+            transcriptLength: transcript?.length || 0,
         });
 
+        // Validate inputs
+        if (!transcript || transcript.trim() === "") {
+            throw new Error("No transcript provided. Cannot answer question.");
+        }
+
+        if (!question || question.trim() === "") {
+            throw new Error("No question provided. Please enter a question.");
+        }
+
+        // Make the API request
         const response = await fetch(`${API_BASE_URL}/ask`, {
             method: "POST",
             headers: {
@@ -240,6 +310,11 @@ async function askQuestion(transcript, question, apiKey) {
 
         const data = await response.json();
         console.log("Received answer from API");
+
+        // Validate the response
+        if (!data.answer || data.answer.trim() === "") {
+            throw new Error("Received empty answer from API");
+        }
 
         // Return the answer as is - it will be parsed as markdown in the sidebar
         return data.answer;
