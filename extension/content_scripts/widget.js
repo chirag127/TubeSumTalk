@@ -621,9 +621,16 @@ class TubeSumTalkWidget {
     refreshSummary() {
         console.log("Refreshing summary for current video");
 
+        // Show loading state with timer
+        this.showLoading();
+
+        // Reset cancel flag
+        this.cancelRequested = false;
+
         // If we have a global function to process the current video, use it
+        // Pass true to force refresh even if video ID hasn't changed
         if (window.TubeSumTalk && window.TubeSumTalk.processCurrentVideo) {
-            window.TubeSumTalk.processCurrentVideo();
+            window.TubeSumTalk.processCurrentVideo(true);
         } else {
             // Fallback to just regenerating the summary
             this.generateSummary();

@@ -203,15 +203,60 @@ async function getTranscript(url) {
 }
 
 // Get video details (title, author, videoId)
-function getVideoDetails() {
+function getVideoDetails(forceRefresh = false) {
     // Get video ID from URL
     const urlParams = new URLSearchParams(window.location.search);
     const videoId = urlParams.get("v");
 
-    console.log("Getting details for video ID:", videoId);
+    console.log(
+        "Getting details for video ID:",
+        videoId,
+        "force refresh:",
+        forceRefresh
+    );
+
+    // If forcing refresh, try to get the most up-to-date data
+    if (forceRefresh) {
+        // Try to get the current video element
+        const videoElement = document.querySelector("video.html5-main-video");
+        if (videoElement) {
+            console.log(
+                "Found video element, current time:",
+                videoElement.currentTime
+            );
+        }
+    }
 
     // Try to get video details from YouTube's ytInitialPlayerResponse
     try {
+        // For forced refresh, try to get the most up-to-date data from the page
+        if (forceRefresh) {
+            // Try to get data from the player directly
+            try {
+                // This approach tries to access the YouTube player API
+                const player = document.querySelector("#movie_player");
+                if (player && player.getVideoData) {
+                    const playerData = player.getVideoData();
+                    console.log(
+                        "Found video details from player API:",
+                        playerData
+                    );
+                    if (playerData && playerData.video_id) {
+                        return {
+                            videoId: playerData.video_id,
+                            title:
+                                playerData.title ||
+                                document.title.replace(" - YouTube", ""),
+                            author: playerData.author || "Unknown Author",
+                        };
+                    }
+                }
+            } catch (playerError) {
+                console.error("Error getting data from player:", playerError);
+            }
+        }
+
+        // Try the standard approach with ytInitialPlayerResponse
         if (
             window.ytInitialPlayerResponse &&
             window.ytInitialPlayerResponse.videoDetails

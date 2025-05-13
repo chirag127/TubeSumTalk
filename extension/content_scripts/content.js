@@ -94,15 +94,30 @@ function startVideoMonitoring() {
 /**
  * Process the current video
  * Gets video details, transcript, and generates summary
+ * @param {boolean} forceRefresh - Whether to force refresh even if video ID hasn't changed
  */
-async function processCurrentVideo() {
-    // Get video details
-    const videoDetails = getVideoDetails();
+async function processCurrentVideo(forceRefresh = false) {
+    console.log("Processing video, force refresh:", forceRefresh);
+
+    // Force refresh of YouTube's player response data
+    if (forceRefresh) {
+        console.log("Forcing refresh of video data");
+        // Clear any cached data
+        window.ytInitialPlayerResponse = null;
+    }
+
+    // Get video details - pass forceRefresh to ensure fresh data
+    const videoDetails = getVideoDetails(forceRefresh);
     console.log("Processing video:", videoDetails);
 
     // If no video ID, exit
     if (!videoDetails.videoId) {
         console.error("No video ID found");
+        if (widget) {
+            widget.showError(
+                "Could not detect video ID. Please try again or reload the page."
+            );
+        }
         return;
     }
 
@@ -112,9 +127,11 @@ async function processCurrentVideo() {
         videoDetails.title = "YouTube Video " + videoDetails.videoId;
     }
 
-    // If we've already processed this video, don't do it again
-    if (videoDetails.videoId === currentVideoId && widget) {
-        console.log("Video already processed, skipping");
+    // If we've already processed this video and not forcing refresh, don't do it again
+    if (!forceRefresh && videoDetails.videoId === currentVideoId && widget) {
+        console.log(
+            "Video already processed, skipping (use refresh button to force)"
+        );
         return;
     }
 
@@ -131,10 +148,23 @@ async function processCurrentVideo() {
     // Prevent multiple simultaneous processing
     if (isProcessing) {
         console.log("Already processing a video, waiting");
+        // If we're forcing a refresh, show a message to the user
+        if (forceRefresh && widget) {
+            widget.showError(
+                "Already processing a video. Please wait a moment and try again."
+            );
+        }
         return;
     }
 
     isProcessing = true;
+
+    // If this is a forced refresh, clear any cached transcript data
+    if (forceRefresh) {
+        console.log("Forcing refresh of transcript data");
+        currentTranscript = null;
+        window.currentTranscript = null;
+    }
 
     try {
         // Get available transcript languages
@@ -297,7 +327,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         sendResponse({ success: true });
     } else if (message.action === "refreshVideo") {
         console.log("Received refresh request");
-        processCurrentVideo();
+        // Pass true to force refresh even if the video ID hasn't changed
+        processCurrentVideo(true);
         sendResponse({ success: true });
     }
 
