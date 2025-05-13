@@ -14,6 +14,15 @@ class TubeSumTalkWidget {
             rate: 1.0,
             pitch: 1.0,
         };
+        this.processingTimers = {
+            summary: null,
+            qa: null,
+        };
+        this.processingStartTime = {
+            summary: 0,
+            qa: 0,
+        };
+        this.cancelRequested = false;
         this.isProcessingQuestion = false;
     }
 
@@ -543,7 +552,10 @@ class TubeSumTalkWidget {
             return;
         }
 
-        // Show loading state
+        // Reset cancel flag
+        this.cancelRequested = false;
+
+        // Show loading state with timer
         this.showLoading();
 
         // Get summary settings
@@ -583,6 +595,12 @@ class TubeSumTalkWidget {
                 summaryLength: summaryLength,
             },
             (response) => {
+                // Check if the request was cancelled
+                if (this.cancelRequested) {
+                    console.log("Summary generation was cancelled by user");
+                    return;
+                }
+
                 if (response && response.success) {
                     console.log("Summary received successfully");
                     // Display summary
@@ -614,29 +632,32 @@ class TubeSumTalkWidget {
 
     // Ask a question about the video
     askQuestion(question) {
-        if (this.isProcessingQuestion) {
+        if (this.isProcessingQuestion || this.cancelRequested) {
             return;
         }
 
         this.isProcessingQuestion = true;
+        this.cancelRequested = false;
 
-        // Show loading state
-        const answerElement = this.widgetElement.querySelector(
-            "#tubesumtalk-answer"
-        );
-        if (answerElement) {
-            answerElement.innerHTML = `
-        <div class="tubesumtalk-loading">
-          <div class="tubesumtalk-spinner"></div>
-          <div>Generating answer...</div>
-        </div>
-      `;
-        }
+        // Get transcript length for estimation
+        const transcriptLength = window.currentTranscript
+            ? window.currentTranscript.length
+            : 0;
+
+        // Show loading state with timer
+        this.showQALoading(transcriptLength);
 
         // Use the global askQuestion function
         window.TubeSumTalk.askQuestion(question)
             .then((answer) => {
-                if (answerElement) {
+                // Clear the processing timer
+                this.clearProcessingTimer("qa");
+
+                const answerElement = this.widgetElement.querySelector(
+                    "#tubesumtalk-answer"
+                );
+
+                if (answerElement && !this.cancelRequested) {
                     // Parse markdown to HTML
                     const htmlContent = this.parseMarkdown(answer);
                     answerElement.innerHTML = htmlContent;
@@ -649,13 +670,9 @@ class TubeSumTalkWidget {
                 }
             })
             .catch((error) => {
-                if (answerElement) {
-                    answerElement.innerHTML = `
-            <div class="tubesumtalk-error">
-              <div class="tubesumtalk-error-icon">⚠️</div>
-              <div>${error.message}</div>
-            </div>
-          `;
+                // Only show error if not cancelled by user
+                if (!this.cancelRequested) {
+                    this.showError(error.message, "qa");
                 }
             })
             .finally(() => {
@@ -833,6 +850,9 @@ class TubeSumTalkWidget {
         this.summary = summary;
         this.originalMarkdown = summary;
 
+        // Clear the processing timer
+        this.clearProcessingTimer("summary");
+
         const summaryElement = this.widgetElement.querySelector(
             "#tubesumtalk-summary"
         );
@@ -959,20 +979,180 @@ class TubeSumTalkWidget {
     }
 
     // Show error
-    showError(message) {
-        const summaryElement = this.widgetElement.querySelector(
-            "#tubesumtalk-summary"
-        );
-        if (summaryElement) {
-            summaryElement.innerHTML = `
-            <div class="tubesumtalk-error">
-                <div class="tubesumtalk-error-icon">⚠️</div>
-                <div>${message}</div>
-            </div>`;
+    showError(message, type = "summary") {
+        // Clear the processing timer
+        this.clearProcessingTimer(type);
+
+        if (type === "summary") {
+            const summaryElement = this.widgetElement.querySelector(
+                "#tubesumtalk-summary"
+            );
+            if (summaryElement) {
+                summaryElement.innerHTML = `
+                <div class="tubesumtalk-error">
+                    <div class="tubesumtalk-error-icon">⚠️</div>
+                    <div>${message}</div>
+                </div>`;
+            }
+        } else if (type === "qa") {
+            const answerElement = this.widgetElement.querySelector(
+                "#tubesumtalk-answer"
+            );
+            if (answerElement) {
+                answerElement.innerHTML = `
+                <div class="tubesumtalk-error">
+                    <div class="tubesumtalk-error-icon">⚠️</div>
+                    <div>${message}</div>
+                </div>`;
+            }
+
+            // Reset the processing flag
+            this.isProcessingQuestion = false;
         }
     }
 
-    // Show loading
+    // Start a processing timer
+    startProcessingTimer(type, transcriptLength = 0) {
+        // Clear any existing timer
+        this.clearProcessingTimer(type);
+
+        // Set the start time
+        this.processingStartTime[type] = Date.now();
+        this.cancelRequested = false;
+
+        // Calculate estimated completion time (1 second per 1000 characters)
+        const estimatedSeconds =
+            type === "qa" ? Math.max(5, Math.ceil(transcriptLength / 1000)) : 0;
+
+        // Create timer element
+        const timerElement = document.querySelector(
+            `.tubesumtalk-timer-${type}`
+        );
+        if (timerElement) {
+            timerElement.textContent = "0s";
+            timerElement.setAttribute(
+                "aria-label",
+                `Processing time: 0 seconds`
+            );
+        }
+
+        // Update estimate element
+        const estimateElement = document.querySelector(
+            `.tubesumtalk-estimate-${type}`
+        );
+        if (estimateElement && type === "qa" && estimatedSeconds > 0) {
+            estimateElement.textContent = `Estimated time: ~${estimatedSeconds} seconds`;
+            estimateElement.setAttribute(
+                "aria-label",
+                `Estimated completion time: approximately ${estimatedSeconds} seconds`
+            );
+        }
+
+        // Start the timer interval
+        this.processingTimers[type] = setInterval(() => {
+            const elapsedSeconds = Math.floor(
+                (Date.now() - this.processingStartTime[type]) / 1000
+            );
+
+            // Update the timer display
+            const timerElement = document.querySelector(
+                `.tubesumtalk-timer-${type}`
+            );
+            if (timerElement) {
+                timerElement.textContent = `${elapsedSeconds}s`;
+                timerElement.setAttribute(
+                    "aria-label",
+                    `Processing time: ${elapsedSeconds} seconds`
+                );
+            }
+
+            // Show warning if taking too long (over 60 seconds)
+            if (elapsedSeconds > 60) {
+                const messageElement = document.querySelector(
+                    `.tubesumtalk-message-${type}`
+                );
+                if (messageElement) {
+                    if (type === "summary") {
+                        messageElement.textContent =
+                            "Still generating summary... (taking longer than usual)";
+                    } else {
+                        messageElement.textContent =
+                            "Still processing your question... (taking longer than usual)";
+                    }
+                }
+            }
+        }, 1000);
+    }
+
+    // Clear a processing timer
+    clearProcessingTimer(type) {
+        if (this.processingTimers[type]) {
+            clearInterval(this.processingTimers[type]);
+            this.processingTimers[type] = null;
+        }
+    }
+
+    // Handle cancel request
+    handleCancelRequest(type) {
+        this.cancelRequested = true;
+
+        // Update the UI to show cancellation is in progress
+        const messageElement = document.querySelector(
+            `.tubesumtalk-message-${type}`
+        );
+        if (messageElement) {
+            messageElement.textContent = "Cancelling request...";
+        }
+
+        // Hide the cancel button
+        const cancelButton = document.querySelector(
+            `.tubesumtalk-cancel-${type}`
+        );
+        if (cancelButton) {
+            cancelButton.style.display = "none";
+        }
+
+        // For summary, we'll try to abort by refreshing the widget
+        if (type === "summary") {
+            // Clear the timer
+            this.clearProcessingTimer(type);
+
+            // Show a message
+            const summaryElement = this.widgetElement.querySelector(
+                "#tubesumtalk-summary"
+            );
+            if (summaryElement) {
+                summaryElement.innerHTML = `
+                <div class="tubesumtalk-placeholder">
+                    <p>Request cancelled. Click "Generate Summary" to try again.</p>
+                </div>
+                `;
+            }
+        }
+
+        // For Q&A, we'll update the answer area
+        if (type === "qa") {
+            // Clear the timer
+            this.clearProcessingTimer(type);
+
+            // Show a message
+            const answerElement = this.widgetElement.querySelector(
+                "#tubesumtalk-answer"
+            );
+            if (answerElement) {
+                answerElement.innerHTML = `
+                <div class="tubesumtalk-placeholder">
+                    <p>Request cancelled. Please try asking another question.</p>
+                </div>
+                `;
+            }
+
+            // Reset the processing flag
+            this.isProcessingQuestion = false;
+        }
+    }
+
+    // Show loading with timer for summary
     showLoading() {
         const summaryElement = this.widgetElement.querySelector(
             "#tubesumtalk-summary"
@@ -980,10 +1160,69 @@ class TubeSumTalkWidget {
         if (summaryElement) {
             summaryElement.innerHTML = `
         <div class="tubesumtalk-loading">
-          <div class="tubesumtalk-spinner"></div>
-          <div>Loading summary...</div>
+          <div class="tubesumtalk-spinner-container">
+            <div class="tubesumtalk-spinner tubesumtalk-pulse"></div>
+            <div class="tubesumtalk-timer tubesumtalk-timer-summary" role="timer" aria-label="Processing time: 0 seconds">0s</div>
+          </div>
+          <div class="tubesumtalk-loading-text">
+            <div class="tubesumtalk-loading-message tubesumtalk-message-summary">Generating summary...</div>
+            <div class="tubesumtalk-loading-estimate tubesumtalk-estimate-summary">This may take a few moments</div>
+          </div>
+          <button class="tubesumtalk-cancel-button tubesumtalk-cancel-summary" aria-label="Cancel summary generation">
+            <span>Cancel</span>
+          </button>
         </div>
       `;
+
+            // Start the timer
+            this.startProcessingTimer("summary");
+
+            // Add event listener to the cancel button
+            const cancelButton = summaryElement.querySelector(
+                ".tubesumtalk-cancel-summary"
+            );
+            if (cancelButton) {
+                cancelButton.addEventListener("click", () =>
+                    this.handleCancelRequest("summary")
+                );
+            }
+        }
+    }
+
+    // Show loading with timer for Q&A
+    showQALoading(transcriptLength) {
+        const answerElement = this.widgetElement.querySelector(
+            "#tubesumtalk-answer"
+        );
+        if (answerElement) {
+            answerElement.innerHTML = `
+        <div class="tubesumtalk-loading">
+          <div class="tubesumtalk-spinner-container">
+            <div class="tubesumtalk-spinner tubesumtalk-pulse"></div>
+            <div class="tubesumtalk-timer tubesumtalk-timer-qa" role="timer" aria-label="Processing time: 0 seconds">0s</div>
+          </div>
+          <div class="tubesumtalk-loading-text">
+            <div class="tubesumtalk-loading-message tubesumtalk-message-qa">Processing your question...</div>
+            <div class="tubesumtalk-loading-estimate tubesumtalk-estimate-qa">Estimating completion time...</div>
+          </div>
+          <button class="tubesumtalk-cancel-button tubesumtalk-cancel-qa" aria-label="Cancel question processing">
+            <span>Cancel</span>
+          </button>
+        </div>
+      `;
+
+            // Start the timer with transcript length for estimation
+            this.startProcessingTimer("qa", transcriptLength);
+
+            // Add event listener to the cancel button
+            const cancelButton = answerElement.querySelector(
+                ".tubesumtalk-cancel-qa"
+            );
+            if (cancelButton) {
+                cancelButton.addEventListener("click", () =>
+                    this.handleCancelRequest("qa")
+                );
+            }
         }
     }
 }
