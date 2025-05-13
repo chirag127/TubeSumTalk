@@ -24,6 +24,7 @@ class TubeSumTalkWidget {
         };
         this.cancelRequested = false;
         this.isProcessingQuestion = false;
+        this.lastQuestion = ""; // Store the last question asked
     }
 
     // Initialize the widget
@@ -153,7 +154,14 @@ class TubeSumTalkWidget {
         <div id="tubesumtalk-qa-panel" class="tubesumtalk-panel">
           <div class="tubesumtalk-qa-form">
             <textarea id="tubesumtalk-question" placeholder="Ask a question about this video..."></textarea>
-            <button id="tubesumtalk-ask" class="tubesumtalk-button">Ask</button>
+            <div class="tubesumtalk-button-group">
+              <button id="tubesumtalk-qa-refresh" class="tubesumtalk-icon-button" title="Refresh answer for current question">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" fill="currentColor"/>
+                </svg>
+              </button>
+              <button id="tubesumtalk-ask" class="tubesumtalk-button">Ask</button>
+            </div>
           </div>
 
           <div class="tubesumtalk-qa-container">
@@ -386,6 +394,16 @@ class TubeSumTalkWidget {
             });
         }
 
+        // Q&A refresh button
+        const qaRefreshButton = this.widgetElement.querySelector(
+            "#tubesumtalk-qa-refresh"
+        );
+        if (qaRefreshButton) {
+            qaRefreshButton.addEventListener("click", () => {
+                this.refreshAnswer();
+            });
+        }
+
         // API key input and show/hide button
         const apiKeyInput = this.widgetElement.querySelector(
             "#tubesumtalk-api-key"
@@ -524,18 +542,64 @@ class TubeSumTalkWidget {
             ".tubesumtalk-qa-container"
         );
 
-        // Temporarily set the ID to tubesumtalk-summary for TTS function to work
-        const originalId = answerElement.id;
-        answerElement.id = "tubesumtalk-summary";
+        // Get the play/pause button for Q&A
+        const qaPlayPauseButton = this.widgetElement.querySelector(
+            "#tubesumtalk-qa-play-pause"
+        );
 
-        // Call the global TTS function
+        // Check if TTS is already playing
+        const isSpeaking = window.speechSynthesis.speaking;
+
+        // If speaking, stop it first
+        if (isSpeaking) {
+            window.speechSynthesis.cancel();
+            if (qaPlayPauseButton) {
+                qaPlayPauseButton.textContent = "▶";
+                qaPlayPauseButton.setAttribute("aria-label", "Play");
+            }
+            return;
+        }
+
+        // Get the original markdown content if available
+        const originalMarkdown = answerElement.getAttribute(
+            "data-original-markdown"
+        );
+
+        // Create a temporary container for the answer content
+        const tempContainer = document.createElement("div");
+        tempContainer.id = "tubesumtalk-summary"; // This ID is required for the TTS function
+
+        // Use the original HTML content from the answer element
+        tempContainer.innerHTML = answerElement.innerHTML;
+
+        // Position the temporary container off-screen but keep it in the DOM
+        tempContainer.style.position = "absolute";
+        tempContainer.style.left = "-9999px";
+        tempContainer.style.top = "-9999px";
+        tempContainer.style.opacity = "0";
+        tempContainer.style.pointerEvents = "none";
+        document.body.appendChild(tempContainer);
+
+        // Store a reference to the temporary container in the window object
+        // so it can be accessed and removed when TTS is done
+        window.tubesumtalkQATempContainer = tempContainer;
+
+        console.log("Starting TTS for Q&A content");
+
+        // Call the global TTS function with the Q&A specific options
         togglePlayPause(null, {
             ...this.ttsSettings,
             scrollContainer: scrollContainer,
+            qaMode: true,
+            qaElement: answerElement,
+            originalContent: originalMarkdown || answerElement.innerHTML,
         });
 
-        // Restore the original ID
-        answerElement.id = originalId;
+        // Update the play button state
+        if (qaPlayPauseButton) {
+            qaPlayPauseButton.textContent = "⏸";
+            qaPlayPauseButton.setAttribute("aria-label", "Pause");
+        }
     }
 
     // Generate a new summary
@@ -643,6 +707,9 @@ class TubeSumTalkWidget {
             return;
         }
 
+        // Store the question for potential refresh later
+        this.lastQuestion = question;
+
         this.isProcessingQuestion = true;
         this.cancelRequested = false;
 
@@ -685,6 +752,40 @@ class TubeSumTalkWidget {
             .finally(() => {
                 this.isProcessingQuestion = false;
             });
+    }
+
+    // Refresh the current answer
+    refreshAnswer() {
+        console.log("Refreshing answer for last question");
+
+        if (!this.lastQuestion) {
+            console.log("No previous question to refresh");
+            this.showError(
+                "Please ask a question first before refreshing.",
+                "qa"
+            );
+            return;
+        }
+
+        if (this.isProcessingQuestion || this.cancelRequested) {
+            console.log("Already processing a question, cannot refresh now");
+            this.showError(
+                "Already processing a question. Please wait a moment and try again.",
+                "qa"
+            );
+            return;
+        }
+
+        // Show the question in the input field
+        const questionInput = this.widgetElement.querySelector(
+            "#tubesumtalk-question"
+        );
+        if (questionInput) {
+            questionInput.value = this.lastQuestion;
+        }
+
+        // Re-ask the same question
+        this.askQuestion(this.lastQuestion);
     }
 
     // Show settings popup

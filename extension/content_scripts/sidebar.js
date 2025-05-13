@@ -455,15 +455,69 @@ class TubeSumTalkSidebar {
             return;
         }
 
-        // Temporarily set the ID to tubesumtalk-summary for TTS function to work
-        const originalId = answerElement.id;
-        answerElement.id = "tubesumtalk-summary";
+        // Get the scrollable container
+        const scrollContainer = this.sidebarElement.querySelector(
+            ".tubesumtalk-qa-container"
+        );
 
-        // Call the global TTS function
-        togglePlayPause(null, this.ttsSettings);
+        // Get the play/pause button for Q&A
+        const qaPlayPauseButton = this.sidebarElement.querySelector(
+            "#tubesumtalk-qa-play-pause"
+        );
 
-        // Restore the original ID
-        answerElement.id = originalId;
+        // Check if TTS is already playing
+        const isSpeaking = window.speechSynthesis.speaking;
+
+        // If speaking, stop it first
+        if (isSpeaking) {
+            window.speechSynthesis.cancel();
+            if (qaPlayPauseButton) {
+                qaPlayPauseButton.textContent = "▶";
+                qaPlayPauseButton.setAttribute("aria-label", "Play");
+            }
+            return;
+        }
+
+        // Get the original markdown content if available
+        const originalMarkdown = answerElement.getAttribute(
+            "data-original-markdown"
+        );
+
+        // Create a temporary container for the answer content
+        const tempContainer = document.createElement("div");
+        tempContainer.id = "tubesumtalk-summary"; // This ID is required for the TTS function
+
+        // Use the original HTML content from the answer element
+        tempContainer.innerHTML = answerElement.innerHTML;
+
+        // Position the temporary container off-screen but keep it in the DOM
+        tempContainer.style.position = "absolute";
+        tempContainer.style.left = "-9999px";
+        tempContainer.style.top = "-9999px";
+        tempContainer.style.opacity = "0";
+        tempContainer.style.pointerEvents = "none";
+        document.body.appendChild(tempContainer);
+
+        // Store a reference to the temporary container in the window object
+        // so it can be accessed and removed when TTS is done
+        window.tubesumtalkQATempContainer = tempContainer;
+
+        console.log("Starting TTS for Q&A content in sidebar");
+
+        // Call the global TTS function with the Q&A specific options
+        togglePlayPause(null, {
+            ...this.ttsSettings,
+            scrollContainer: scrollContainer,
+            qaMode: true,
+            qaElement: answerElement,
+            originalContent: originalMarkdown || answerElement.innerHTML,
+        });
+
+        // Update the play button state
+        if (qaPlayPauseButton) {
+            qaPlayPauseButton.textContent = "⏸";
+            qaPlayPauseButton.setAttribute("aria-label", "Pause");
+        }
     }
 
     // Generate a new summary

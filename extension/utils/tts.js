@@ -17,15 +17,23 @@ function speakWithHighlighting(_, options = {}) {
 
     // Get the summary container
     const container = document.getElementById("tubesumtalk-summary");
-    // Get the scrollable container (summary-container)
+
+    // Get the scrollable container (summary-container or qa-container)
     const scrollContainer =
         options.scrollContainer ||
-        container.closest(".tubesumtalk-summary-container");
+        (container
+            ? container.closest(".tubesumtalk-summary-container")
+            : null);
 
     if (!container) {
         console.error("Summary container not found");
         return;
     }
+
+    // Track if we're in Q&A mode
+    const isQAMode = options.qaMode === true;
+
+    console.log("Speaking with highlighting, Q&A mode:", isQAMode);
 
     // Store the original HTML content
     const originalHTML = container.innerHTML;
@@ -162,6 +170,7 @@ function speakWithHighlighting(_, options = {}) {
             const wordSpan = document.getElementById(
                 `tubesumtalk-word-${wordCount}`
             );
+
             if (wordSpan) {
                 wordSpan.classList.add("tubesumtalk-highlighted");
 
@@ -192,6 +201,183 @@ function speakWithHighlighting(_, options = {}) {
                         });
                     }
                 }
+            } else if (isQAMode && options.qaElement) {
+                // For Q&A mode, we need to highlight in the actual answer element
+                // Since we're using a temporary container for TTS
+                console.log(
+                    "Highlighting word in Q&A mode, word count:",
+                    wordCount
+                );
+
+                try {
+                    // First, remove any existing highlights in the Q&A element
+                    const existingHighlights =
+                        options.qaElement.querySelectorAll(
+                            ".tubesumtalk-highlighted"
+                        );
+                    existingHighlights.forEach((el) => {
+                        // Replace the highlighted span with its text content
+                        const textNode = document.createTextNode(
+                            el.textContent
+                        );
+                        el.parentNode.replaceChild(textNode, el);
+                    });
+
+                    // Normalize the DOM to merge adjacent text nodes
+                    options.qaElement.normalize();
+
+                    // Find all text nodes in the Q&A element
+                    const textNodes = [];
+                    const walker = document.createTreeWalker(
+                        options.qaElement,
+                        NodeFilter.SHOW_TEXT,
+                        null,
+                        false
+                    );
+
+                    let node;
+                    while ((node = walker.nextNode())) {
+                        if (node.textContent.trim()) {
+                            textNodes.push(node);
+                        }
+                    }
+
+                    if (textNodes.length === 0) {
+                        console.warn("No text nodes found in Q&A element");
+                        return;
+                    }
+
+                    // Find the word in the text nodes
+                    let wordIndex = wordCount;
+                    let targetNode = null;
+                    let targetOffset = 0;
+                    let targetWord = "";
+
+                    // Get all words from all text nodes
+                    const allWords = [];
+                    for (const node of textNodes) {
+                        const nodeWords = node.textContent
+                            .split(/\s+/)
+                            .filter((w) => w.trim());
+                        allWords.push(...nodeWords);
+                    }
+
+                    // Make sure we don't go out of bounds
+                    if (wordIndex >= allWords.length) {
+                        wordIndex = allWords.length - 1;
+                    }
+
+                    // Get the target word
+                    targetWord = allWords[wordIndex];
+
+                    if (!targetWord) {
+                        console.warn(
+                            "Target word not found at index:",
+                            wordIndex
+                        );
+                        return;
+                    }
+
+                    console.log(
+                        "Target word:",
+                        targetWord,
+                        "at index:",
+                        wordIndex
+                    );
+
+                    // Find which text node contains this word
+                    let currentWordCount = 0;
+                    for (const node of textNodes) {
+                        const nodeText = node.textContent;
+                        const nodeWords = nodeText
+                            .split(/\s+/)
+                            .filter((w) => w.trim());
+
+                        if (currentWordCount + nodeWords.length > wordIndex) {
+                            // This node contains our target word
+                            targetNode = node;
+                            const wordInNodeIndex =
+                                wordIndex - currentWordCount;
+
+                            // Find the offset of this word in the node text
+                            let currentOffset = 0;
+                            for (let i = 0; i < wordInNodeIndex; i++) {
+                                const wordToFind = nodeWords[i];
+                                const nextIndex = nodeText.indexOf(
+                                    wordToFind,
+                                    currentOffset
+                                );
+                                if (nextIndex >= 0) {
+                                    currentOffset =
+                                        nextIndex + wordToFind.length;
+                                }
+                            }
+
+                            // Find the target word in the node text
+                            targetOffset = nodeText.indexOf(
+                                targetWord,
+                                currentOffset
+                            );
+                            break;
+                        }
+
+                        currentWordCount += nodeWords.length;
+                    }
+
+                    // If we found the node containing the word, create a highlight
+                    if (targetNode && targetOffset >= 0) {
+                        const range = document.createRange();
+                        const wordEnd = targetNode.textContent.indexOf(
+                            " ",
+                            targetOffset + 1
+                        );
+                        const endOffset =
+                            wordEnd > 0
+                                ? wordEnd
+                                : targetOffset + targetWord.length;
+
+                        range.setStart(targetNode, targetOffset);
+                        range.setEnd(targetNode, endOffset);
+
+                        // Create highlight span
+                        const span = document.createElement("span");
+                        span.className = "tubesumtalk-highlighted";
+                        range.surroundContents(span);
+
+                        // Scroll to the highlighted word
+                        if (scrollContainer) {
+                            const spanRect = span.getBoundingClientRect();
+                            const containerRect =
+                                scrollContainer.getBoundingClientRect();
+
+                            // Check if word is outside visible area
+                            const isAbove = spanRect.top < containerRect.top;
+                            const isBelow =
+                                spanRect.bottom > containerRect.bottom;
+
+                            if (isAbove || isBelow) {
+                                const scrollTop =
+                                    spanRect.top +
+                                    scrollContainer.scrollTop -
+                                    containerRect.top -
+                                    containerRect.height / 2 +
+                                    spanRect.height / 2;
+
+                                scrollContainer.scrollTo({
+                                    top: scrollTop,
+                                    behavior: "smooth",
+                                });
+                            }
+                        }
+                    } else {
+                        console.warn(
+                            "Could not find target node or offset for word:",
+                            targetWord
+                        );
+                    }
+                } catch (e) {
+                    console.error("Error highlighting word in Q&A mode:", e);
+                }
             }
         }
     };
@@ -216,6 +402,30 @@ function speakWithHighlighting(_, options = {}) {
         const container = document.getElementById("tubesumtalk-summary");
         if (container && utterance._originalHTML) {
             container.innerHTML = utterance._originalHTML;
+        }
+
+        // Update the Q&A play button if in Q&A mode
+        if (isQAMode) {
+            const qaPlayPauseButton = document.getElementById(
+                "tubesumtalk-qa-play-pause"
+            );
+            if (qaPlayPauseButton) {
+                qaPlayPauseButton.textContent = "▶";
+                qaPlayPauseButton.setAttribute("aria-label", "Play");
+            }
+
+            // Clean up the temporary container if it exists
+            if (window.tubesumtalkQATempContainer) {
+                console.log("Cleaning up temporary Q&A container");
+                try {
+                    document.body.removeChild(
+                        window.tubesumtalkQATempContainer
+                    );
+                } catch (e) {
+                    console.error("Error removing temporary Q&A container:", e);
+                }
+                window.tubesumtalkQATempContainer = null;
+            }
         }
     };
 
@@ -246,6 +456,17 @@ function stopSpeaking() {
                 container.innerHTML = originalHTML;
             }
         }
+
+        // Clean up the temporary Q&A container if it exists
+        if (window.tubesumtalkQATempContainer) {
+            console.log("Cleaning up temporary Q&A container on stop");
+            try {
+                document.body.removeChild(window.tubesumtalkQATempContainer);
+            } catch (e) {
+                console.error("Error removing temporary Q&A container:", e);
+            }
+            window.tubesumtalkQATempContainer = null;
+        }
     }
 }
 
@@ -261,10 +482,23 @@ function togglePlayPause(_, options = {}) {
 
 // Update play/pause button
 function updatePlayPauseButton() {
+    // Update the main summary play/pause button
     const playPauseButton = document.getElementById("tubesumtalk-play-pause");
     if (playPauseButton) {
         playPauseButton.textContent = isPlaying ? "⏸" : "▶";
         playPauseButton.setAttribute(
+            "aria-label",
+            isPlaying ? "Pause" : "Play"
+        );
+    }
+
+    // Also update the Q&A play/pause button
+    const qaPlayPauseButton = document.getElementById(
+        "tubesumtalk-qa-play-pause"
+    );
+    if (qaPlayPauseButton) {
+        qaPlayPauseButton.textContent = isPlaying ? "⏸" : "▶";
+        qaPlayPauseButton.setAttribute(
             "aria-label",
             isPlaying ? "Pause" : "Play"
         );
