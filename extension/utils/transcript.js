@@ -204,9 +204,19 @@ async function getTranscript(url) {
 
 // Get video details (title, author, videoId)
 function getVideoDetails(forceRefresh = false) {
-    // Get video ID from URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const videoId = urlParams.get("v");
+    // Get video ID from URL - handle both standard watch URLs and livestream URLs
+    let videoId;
+
+    // Check if this is a livestream URL (format: /live/VIDEO_ID)
+    const liveMatch = window.location.pathname.match(/\/live\/([^\/\?]+)/);
+    if (liveMatch && liveMatch[1]) {
+        videoId = liveMatch[1];
+        console.log("Detected livestream URL, extracted video ID:", videoId);
+    } else {
+        // Standard watch URL (format: /watch?v=VIDEO_ID)
+        const urlParams = new URLSearchParams(window.location.search);
+        videoId = urlParams.get("v");
+    }
 
     console.log(
         "Getting details for video ID:",

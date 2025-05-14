@@ -5,7 +5,8 @@
  */
 
 // Constants
-const YOUTUBE_VIDEO_REGEX = /^https:\/\/www\.youtube\.com\/watch\?v=.+/;
+const YOUTUBE_VIDEO_REGEX =
+    /^https:\/\/www\.youtube\.com\/(watch\?v=|live\/).+/;
 const VIDEO_CHECK_INTERVAL = 2000; // Check for video changes every 2 seconds
 
 // State
