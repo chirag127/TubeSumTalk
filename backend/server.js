@@ -6,7 +6,11 @@
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
-const { generateSummary, generateAnswer } = require("./api/gemini");
+const {
+    generateSummary,
+    generateAnswer,
+    generateSuggestedQuestions,
+} = require("./api/gemini");
 
 // Load environment variables
 dotenv.config();
@@ -117,6 +121,48 @@ app.post("/ask", async (req, res) => {
         return res
             .status(500)
             .json({ error: error.message || "Failed to generate answer" });
+    }
+});
+
+// Suggested questions endpoint
+app.post("/suggested-questions", async (req, res) => {
+    try {
+        console.log("Received suggested questions request");
+
+        const { transcript, apiKey } = req.body;
+
+        // Validate required fields
+        if (!transcript) {
+            console.error("Missing transcript in request");
+            return res
+                .status(400)
+                .json({ error: "Missing transcript in request" });
+        }
+
+        if (!apiKey) {
+            console.error("Missing API key in request");
+            return res
+                .status(400)
+                .json({ error: "Missing API key in request" });
+        }
+
+        console.log("Transcript length:", transcript.length);
+
+        const questions = await generateSuggestedQuestions(transcript, apiKey);
+        console.log(
+            "Suggested questions generated successfully:",
+            questions.length
+        );
+
+        return res.json({ questions });
+    } catch (error) {
+        console.error("Error generating suggested questions:", error);
+        return res
+            .status(500)
+            .json({
+                error:
+                    error.message || "Failed to generate suggested questions",
+            });
     }
 });
 

@@ -305,6 +305,44 @@ function askQuestion(question) {
 }
 
 /**
+ * Get suggested questions for the current video
+ * @returns {Promise<string[]>} - Array of suggested questions
+ */
+function getSuggestedQuestions() {
+    if (!currentTranscript) {
+        console.error("No transcript available for suggested questions");
+        return Promise.reject(
+            new Error("No transcript available for this video.")
+        );
+    }
+
+    console.log("Getting suggested questions");
+    return new Promise((resolve, reject) => {
+        chrome.runtime.sendMessage(
+            {
+                action: "getSuggestedQuestions",
+                transcript: currentTranscript,
+            },
+            (response) => {
+                if (response && response.success) {
+                    console.log(
+                        "Suggested questions received successfully:",
+                        response.questions
+                    );
+                    resolve(response.questions);
+                } else {
+                    const errorMessage =
+                        response?.error ||
+                        "Failed to get suggested questions. Please try again.";
+                    console.error("Suggested questions error:", errorMessage);
+                    reject(new Error(errorMessage));
+                }
+            }
+        );
+    });
+}
+
+/**
  * Clean up resources when the extension is unloaded
  */
 function cleanup() {
@@ -355,4 +393,5 @@ window.addEventListener("unload", cleanup);
 window.TubeSumTalk = {
     askQuestion,
     processCurrentVideo,
+    getSuggestedQuestions,
 };

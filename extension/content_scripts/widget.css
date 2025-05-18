@@ -261,6 +261,21 @@ html[dark] .tubesumtalk-summary-container::-webkit-scrollbar-thumb {
     text-align: center;
 }
 
+.tubesumtalk-success-message {
+    color: #34a853;
+    padding: 12px;
+    border: 1px solid #34a853;
+    border-radius: 4px;
+    background-color: rgba(52, 168, 83, 0.05);
+    font-size: 14px;
+}
+
+.tubesumtalk-success-icon {
+    font-size: 24px;
+    margin-bottom: 8px;
+    text-align: center;
+}
+
 /* Tabs */
 .tubesumtalk-tabs {
     display: flex;
@@ -389,6 +404,53 @@ html[dark] .tubesumtalk-summary-container::-webkit-scrollbar-thumb {
     line-height: 1.6;
     font-size: 14px;
     color: var(--yt-spec-text-primary, #0f0f0f);
+}
+
+/* Suggested Questions styles */
+.tubesumtalk-suggested-questions {
+    margin-bottom: 16px;
+}
+
+.tubesumtalk-suggested-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.tubesumtalk-suggested-header h4 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--yt-spec-text-primary, #0f0f0f);
+}
+
+.tubesumtalk-suggested-list {
+    background-color: var(--yt-spec-brand-background-solid, #f9f9f9);
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 16px;
+}
+
+.tubesumtalk-suggested-question {
+    padding: 8px 12px;
+    margin-bottom: 8px;
+    background-color: var(--yt-spec-base-background, #fff);
+    border: 1px solid var(--yt-spec-10-percent-layer, #e5e5e5);
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--yt-spec-text-primary, #0f0f0f);
+    transition: background-color 0.2s ease;
+}
+
+.tubesumtalk-suggested-question:hover {
+    background-color: var(--yt-spec-brand-button-background, #065fd4);
+    color: white;
+}
+
+.tubesumtalk-suggested-question:last-child {
+    margin-bottom: 0;
 }
 
 .tubesumtalk-placeholder {
@@ -791,6 +853,27 @@ html[dark] .tubesumtalk-select-group label,
 }
 
 html[dark] .tubesumtalk-qa-container,
-.tubesumtalk-dark-theme .tubesumtalk-qa-container {
+html[dark] .tubesumtalk-suggested-list,
+.tubesumtalk-dark-theme .tubesumtalk-qa-container,
+.tubesumtalk-dark-theme .tubesumtalk-suggested-list {
     background-color: var(--yt-spec-brand-background-solid, #212121);
+}
+
+html[dark] .tubesumtalk-suggested-question,
+.tubesumtalk-dark-theme .tubesumtalk-suggested-question {
+    background-color: var(--yt-spec-base-background, #0f0f0f);
+    border-color: var(--yt-spec-10-percent-layer, #333);
+    color: var(--yt-spec-text-primary, #fff);
+}
+
+html[dark] .tubesumtalk-suggested-question:hover,
+.tubesumtalk-dark-theme .tubesumtalk-suggested-question:hover {
+    background-color: var(--yt-spec-brand-button-background, #065fd4);
+    color: white;
+}
+
+html[dark] .tubesumtalk-success-message,
+.tubesumtalk-dark-theme .tubesumtalk-success-message {
+    background-color: rgba(52, 168, 83, 0.1);
+    border-color: #34a853;
 }

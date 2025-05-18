@@ -178,6 +178,42 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         // Return true to indicate we'll send a response asynchronously
         return true;
     }
+
+    if (message.action === "getSuggestedQuestions") {
+        console.log("Received suggested questions request");
+
+        // Get API key from storage
+        chrome.storage.sync.get(["apiKey"], (result) => {
+            if (!result.apiKey) {
+                console.error("No API key found in storage");
+                sendResponse({
+                    success: false,
+                    error: "No API key found. Please add your Gemini API key in the extension settings.",
+                });
+                return;
+            }
+
+            console.log("Calling backend API to generate suggested questions");
+            getSuggestedQuestions(message.transcript, result.apiKey)
+                .then((questions) => {
+                    console.log(
+                        "Suggested questions generated successfully:",
+                        questions.length
+                    );
+                    sendResponse({ success: true, questions });
+                })
+                .catch((error) => {
+                    console.error(
+                        "Error generating suggested questions:",
+                        error
+                    );
+                    sendResponse({ success: false, error: error.message });
+                });
+        });
+
+        // Return true to indicate we'll send a response asynchronously
+        return true;
+    }
 });
 
 // Function to call the backend API for summarization
@@ -320,6 +356,72 @@ async function askQuestion(transcript, question, apiKey) {
         return data.answer;
     } catch (error) {
         console.error("Error calling API:", error);
+        throw error;
+    }
+}
+
+// Function to call the backend API for suggested questions
+async function getSuggestedQuestions(transcript, apiKey) {
+    try {
+        console.log(
+            `Sending request to backend API at ${API_BASE_URL}/suggested-questions`
+        );
+        console.log("Request data:", {
+            transcriptLength: transcript?.length || 0,
+        });
+
+        // Validate inputs
+        if (!transcript || transcript.trim() === "") {
+            throw new Error(
+                "No transcript provided. Cannot generate suggested questions."
+            );
+        }
+
+        // Make the API request
+        const response = await fetch(`${API_BASE_URL}/suggested-questions`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                transcript,
+                apiKey,
+            }),
+        });
+
+        console.log("Response status:", response.status);
+
+        if (!response.ok) {
+            let errorMessage = `API error: ${response.status}`;
+
+            try {
+                const errorData = await response.json();
+                errorMessage = errorData.error || errorMessage;
+            } catch (e) {
+                console.error("Failed to parse error response:", e);
+            }
+
+            throw new Error(errorMessage);
+        }
+
+        const data = await response.json();
+        console.log("Received suggested questions from API:", data.questions);
+
+        // Validate the response
+        if (
+            !data.questions ||
+            !Array.isArray(data.questions) ||
+            data.questions.length === 0
+        ) {
+            throw new Error(
+                "Received empty or invalid suggested questions from API"
+            );
+        }
+
+        // Return the questions array
+        return data.questions;
+    } catch (error) {
+        console.error("Error calling API for suggested questions:", error);
         throw error;
     }
 }

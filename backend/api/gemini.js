@@ -267,7 +267,150 @@ Transcript: """${transcript}"""
     }
 }
 
+/**
+ * Generate suggested questions about a YouTube video transcript using Gemini API
+ *
+ * @param {string} transcript - The transcript of the video
+ * @param {string} apiKey - The user's Gemini API key
+ * @returns {Promise<string[]>} The generated suggested questions
+ */
+async function generateSuggestedQuestions(transcript, apiKey) {
+    try {
+        console.log("Generating suggested questions for video transcript");
+
+        // Check if API key is provided
+        if (!apiKey) {
+            throw new Error("API key is required");
+        }
+
+        // Create the prompt
+        const inputText = `You are provided with a YouTube video transcript.
+Please generate 3-5 interesting and relevant questions that a viewer might want to ask about this video content.
+The questions should be diverse and cover different aspects of the content.
+Format your response as a JSON array of strings, with each string being a question.
+Example format: ["Question 1?", "Question 2?", "Question 3?"]
+
+Transcript: """${transcript}"""
+`;
+
+        // Initialize the Gemini API with the user's API key
+        const ai = new GoogleGenAI({
+            apiKey: apiKey,
+        });
+
+        // Configuration for the Gemini API
+        const config = {
+            // Note: responseMimeType is not supported in Gemini 2.0 Flash Lite
+            // We'll handle the response formatting in our code
+        };
+
+        // Use the latest Gemini model
+        // Using gemini-1.5-flash for better performance and reliability
+        const model = "gemini-1.5-flash";
+
+        const contents = [
+            {
+                role: "user",
+                parts: [
+                    {
+                        text: inputText,
+                    },
+                ],
+            },
+        ];
+
+        console.log("Sending request to Gemini API using model:", model);
+
+        let fullResponse = "";
+        const response = await ai.models.generateContentStream({
+            model,
+            config,
+            contents,
+        });
+
+        for await (const chunk of response.stream) {
+            const chunkText = chunk.text();
+            fullResponse += chunkText;
+        }
+
+        console.log("Received response from Gemini API");
+
+        // Parse the response as JSON
+        try {
+            // Clean up the response to ensure it's valid JSON
+            let cleanedResponse = fullResponse.trim();
+
+            // If the response is wrapped in ```json and ```, remove them
+            if (cleanedResponse.startsWith("```json")) {
+                cleanedResponse = cleanedResponse.replace(
+                    /```json\n|\n```/g,
+                    ""
+                );
+            } else if (cleanedResponse.startsWith("```")) {
+                cleanedResponse = cleanedResponse.replace(/```\n|\n```/g, "");
+            }
+
+            // Parse the JSON
+            const questions = JSON.parse(cleanedResponse);
+
+            // Ensure we have an array of strings
+            if (Array.isArray(questions) && questions.length > 0) {
+                return questions;
+            } else {
+                throw new Error("Invalid response format");
+            }
+        } catch (parseError) {
+            console.error("Error parsing suggested questions:", parseError);
+
+            // Fallback: Try to extract questions using regex if JSON parsing fails
+            const questionRegex = /"([^"]+\?)"|\d+\.\s+(.+\?)/g;
+            const matches = [...fullResponse.matchAll(questionRegex)];
+
+            if (matches.length > 0) {
+                return matches.map((match) => match[1] || match[2]);
+            }
+
+            // If all else fails, return a default set of questions
+            return [
+                "What are the main topics covered in this video?",
+                "What are the key points discussed in this video?",
+                "Can you summarize the main arguments presented?",
+                "What evidence is provided to support the claims in this video?",
+                "What conclusions does the video reach?",
+            ];
+        }
+
+        return fullResponse;
+    } catch (error) {
+        console.error(
+            "Error calling Gemini API for suggested questions:",
+            error
+        );
+        // More detailed error message
+        if (error.message && error.message.includes("API key")) {
+            throw new Error(
+                "Invalid Gemini API key. Please check your API key and try again."
+            );
+        } else if (error.message && error.message.includes("404")) {
+            throw new Error(
+                "Model not found. The Gemini model may be unavailable or incorrect. Please check your API key permissions."
+            );
+        } else if (error.message && error.message.includes("429")) {
+            throw new Error(
+                "Rate limit exceeded. Please try again later or check your API quota."
+            );
+        } else {
+            console.error("Detailed error:", error);
+            throw new Error(
+                "Failed to generate suggested questions: " +
+                    (error.message || "Unknown error")
+            );
+        }
+    }
+}
+
 module.exports = {
     generateSummary,
     generateAnswer,
+    generateSuggestedQuestions,
 };

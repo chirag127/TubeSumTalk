@@ -155,12 +155,31 @@ class TubeSumTalkWidget {
           <div class="tubesumtalk-qa-form">
             <textarea id="tubesumtalk-question" placeholder="Ask a question about this video..."></textarea>
             <div class="tubesumtalk-button-group">
+              <button id="tubesumtalk-qa-reload" class="tubesumtalk-icon-button" title="Reload Q&A for current video">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" fill="currentColor"/>
+                </svg>
+              </button>
               <button id="tubesumtalk-qa-refresh" class="tubesumtalk-icon-button" title="Refresh answer for current question">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" fill="currentColor"/>
                 </svg>
               </button>
               <button id="tubesumtalk-ask" class="tubesumtalk-button">Ask</button>
+            </div>
+          </div>
+
+          <div class="tubesumtalk-suggested-questions">
+            <div class="tubesumtalk-suggested-header">
+              <h4>Suggested Questions</h4>
+              <button id="tubesumtalk-refresh-suggestions" class="tubesumtalk-icon-button" title="Refresh suggested questions">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" fill="currentColor"/>
+                </svg>
+              </button>
+            </div>
+            <div id="tubesumtalk-suggested-list" class="tubesumtalk-suggested-list">
+              <p class="tubesumtalk-placeholder">Click "Refresh" to generate suggested questions based on the video content.</p>
             </div>
           </div>
 
@@ -401,6 +420,26 @@ class TubeSumTalkWidget {
         if (qaRefreshButton) {
             qaRefreshButton.addEventListener("click", () => {
                 this.refreshAnswer();
+            });
+        }
+
+        // Q&A reload button
+        const qaReloadButton = this.widgetElement.querySelector(
+            "#tubesumtalk-qa-reload"
+        );
+        if (qaReloadButton) {
+            qaReloadButton.addEventListener("click", () => {
+                this.reloadQA();
+            });
+        }
+
+        // Refresh suggested questions button
+        const refreshSuggestionsButton = this.widgetElement.querySelector(
+            "#tubesumtalk-refresh-suggestions"
+        );
+        if (refreshSuggestionsButton) {
+            refreshSuggestionsButton.addEventListener("click", () => {
+                this.loadSuggestedQuestions();
             });
         }
 
@@ -794,6 +833,158 @@ class TubeSumTalkWidget {
         this.askQuestion(this.lastQuestion);
     }
 
+    // Reload the Q&A functionality
+    reloadQA() {
+        console.log("Reloading Q&A for current video");
+
+        // Clear any previous answers
+        const answerElement = this.widgetElement.querySelector(
+            "#tubesumtalk-answer"
+        );
+        if (answerElement) {
+            answerElement.innerHTML = `
+            <p class="tubesumtalk-placeholder">Ask a question about the video content to get an AI-generated answer based on the transcript.</p>
+            `;
+        }
+
+        // Clear the question input
+        const questionInput = this.widgetElement.querySelector(
+            "#tubesumtalk-question"
+        );
+        if (questionInput) {
+            questionInput.value = "";
+        }
+
+        // Reset state
+        this.lastQuestion = "";
+        this.isProcessingQuestion = false;
+        this.cancelRequested = false;
+
+        // Clear the suggested questions
+        const suggestedList = this.widgetElement.querySelector(
+            "#tubesumtalk-suggested-list"
+        );
+        if (suggestedList) {
+            suggestedList.innerHTML = `
+            <p class="tubesumtalk-placeholder">Click "Refresh" to generate suggested questions based on the video content.</p>
+            `;
+        }
+
+        // Force refresh the transcript data
+        if (window.TubeSumTalk && window.TubeSumTalk.processCurrentVideo) {
+            window.TubeSumTalk.processCurrentVideo(true);
+        }
+
+        // Show a success message
+        this.showMessage(
+            "Q&A reloaded successfully. Transcript data refreshed.",
+            "qa"
+        );
+    }
+
+    // Load suggested questions
+    loadSuggestedQuestions() {
+        console.log("Loading suggested questions");
+
+        // Show loading state
+        const suggestedList = this.widgetElement.querySelector(
+            "#tubesumtalk-suggested-list"
+        );
+        if (suggestedList) {
+            suggestedList.innerHTML = `
+            <div class="tubesumtalk-loading">
+              <div class="tubesumtalk-spinner tubesumtalk-pulse"></div>
+              <div class="tubesumtalk-loading-message">Generating suggested questions...</div>
+            </div>
+            `;
+        }
+
+        // Check if we have a transcript
+        if (!window.currentTranscript) {
+            this.showError(
+                "No transcript available. Cannot generate suggested questions.",
+                "suggested"
+            );
+            return;
+        }
+
+        // Use the global getSuggestedQuestions function
+        if (window.TubeSumTalk && window.TubeSumTalk.getSuggestedQuestions) {
+            window.TubeSumTalk.getSuggestedQuestions()
+                .then((questions) => {
+                    console.log("Suggested questions received:", questions);
+                    this.displaySuggestedQuestions(questions);
+                })
+                .catch((error) => {
+                    console.error("Error getting suggested questions:", error);
+                    this.showError(error.message, "suggested");
+                });
+        } else {
+            this.showError(
+                "Suggested questions functionality not available.",
+                "suggested"
+            );
+        }
+    }
+
+    // Display suggested questions
+    displaySuggestedQuestions(questions) {
+        const suggestedList = this.widgetElement.querySelector(
+            "#tubesumtalk-suggested-list"
+        );
+        if (!suggestedList) return;
+
+        if (!questions || questions.length === 0) {
+            suggestedList.innerHTML = `
+            <p class="tubesumtalk-placeholder">No suggested questions available. Try refreshing.</p>
+            `;
+            return;
+        }
+
+        // Create HTML for suggested questions
+        let html = "";
+        questions.forEach((question, index) => {
+            html += `
+            <div class="tubesumtalk-suggested-question" data-question="${this.escapeHtml(
+                question
+            )}">
+                ${this.escapeHtml(question)}
+            </div>
+            `;
+        });
+
+        // Update the suggested list
+        suggestedList.innerHTML = html;
+
+        // Add click event listeners to the suggested questions
+        const questionElements = suggestedList.querySelectorAll(
+            ".tubesumtalk-suggested-question"
+        );
+        questionElements.forEach((element) => {
+            element.addEventListener("click", () => {
+                const question = element.getAttribute("data-question");
+                if (question) {
+                    // Set the question in the input field
+                    const questionInput = this.widgetElement.querySelector(
+                        "#tubesumtalk-question"
+                    );
+                    if (questionInput) {
+                        questionInput.value = question;
+                        // Focus the input field
+                        questionInput.focus();
+                    }
+                }
+            });
+        });
+    }
+
+    // Escape HTML to prevent XSS
+    escapeHtml(text) {
+        const div = document.createElement("div");
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
     // Show settings popup
     showSettingsPopup() {
         // Create popup
@@ -956,6 +1147,14 @@ class TubeSumTalkWidget {
             titleElement.textContent = details.title;
             console.log("Updated widget title to:", details.title);
         }
+
+        // Load suggested questions automatically when a new video is loaded
+        // We'll do this with a slight delay to ensure the transcript is loaded
+        setTimeout(() => {
+            if (window.currentTranscript) {
+                this.loadSuggestedQuestions();
+            }
+        }, 2000);
     }
 
     // Set summary
@@ -1122,6 +1321,55 @@ class TubeSumTalkWidget {
 
             // Reset the processing flag
             this.isProcessingQuestion = false;
+        } else if (type === "suggested") {
+            const suggestedList = this.widgetElement.querySelector(
+                "#tubesumtalk-suggested-list"
+            );
+            if (suggestedList) {
+                suggestedList.innerHTML = `
+                <div class="tubesumtalk-error">
+                    <div class="tubesumtalk-error-icon">⚠️</div>
+                    <div>${message}</div>
+                </div>`;
+            }
+        }
+    }
+
+    // Show success message
+    showMessage(message, type = "summary") {
+        if (type === "summary") {
+            const summaryElement = this.widgetElement.querySelector(
+                "#tubesumtalk-summary"
+            );
+            if (summaryElement) {
+                summaryElement.innerHTML = `
+                <div class="tubesumtalk-success-message">
+                    <div class="tubesumtalk-success-icon">✓</div>
+                    <div>${message}</div>
+                </div>`;
+            }
+        } else if (type === "qa") {
+            const answerElement = this.widgetElement.querySelector(
+                "#tubesumtalk-answer"
+            );
+            if (answerElement) {
+                answerElement.innerHTML = `
+                <div class="tubesumtalk-success-message">
+                    <div class="tubesumtalk-success-icon">✓</div>
+                    <div>${message}</div>
+                </div>`;
+            }
+        } else if (type === "suggested") {
+            const suggestedList = this.widgetElement.querySelector(
+                "#tubesumtalk-suggested-list"
+            );
+            if (suggestedList) {
+                suggestedList.innerHTML = `
+                <div class="tubesumtalk-success-message">
+                    <div class="tubesumtalk-success-icon">✓</div>
+                    <div>${message}</div>
+                </div>`;
+            }
         }
     }
 
