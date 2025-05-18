@@ -328,12 +328,17 @@ Transcript: """${transcript}"""
             contents,
         });
 
-        for await (const chunk of response.stream) {
-            const chunkText = chunk.text();
-            fullResponse += chunkText;
+        // Process the response stream directly, matching the pattern used in generateAnswer
+        for await (const chunk of response) {
+            fullResponse += chunk.text;
         }
 
         console.log("Received response from Gemini API");
+
+        // Ensure the response is not empty
+        if (!fullResponse || fullResponse.trim() === "") {
+            throw new Error("Received empty response from Gemini API");
+        }
 
         // Parse the response as JSON
         try {
@@ -351,26 +356,68 @@ Transcript: """${transcript}"""
             }
 
             // Parse the JSON
-            const questions = JSON.parse(cleanedResponse);
+            let questions;
+            try {
+                questions = JSON.parse(cleanedResponse);
+            } catch (jsonError) {
+                console.error("JSON parse error:", jsonError);
+                console.log("Attempted to parse:", cleanedResponse);
+                throw new Error(
+                    "Failed to parse JSON response: " + jsonError.message
+                );
+            }
 
             // Ensure we have an array of strings
             if (Array.isArray(questions) && questions.length > 0) {
                 return questions;
             } else {
-                throw new Error("Invalid response format");
+                console.error("Invalid questions format:", questions);
+                throw new Error(
+                    "Invalid response format - expected array of questions"
+                );
             }
         } catch (parseError) {
             console.error("Error parsing suggested questions:", parseError);
+            console.log("Full response:", fullResponse);
 
-            // Fallback: Try to extract questions using regex if JSON parsing fails
-            const questionRegex = /"([^"]+\?)"|\d+\.\s+(.+\?)/g;
-            const matches = [...fullResponse.matchAll(questionRegex)];
+            // Fallback 1: Try to extract questions using regex if JSON parsing fails
+            try {
+                // Look for questions in quotes or numbered lists
+                const questionRegex = /"([^"]+\?)"|\d+\.\s+(.+\?)/g;
+                const matches = [...fullResponse.matchAll(questionRegex)];
 
-            if (matches.length > 0) {
-                return matches.map((match) => match[1] || match[2]);
+                if (matches.length > 0) {
+                    console.log(
+                        "Extracted questions using regex:",
+                        matches.length
+                    );
+                    return matches.map((match) => match[1] || match[2]);
+                }
+
+                // Try another pattern - look for any sentence ending with a question mark
+                const simpleQuestionRegex = /([^.!?]+\?)/g;
+                const simpleMatches = [
+                    ...fullResponse.matchAll(simpleQuestionRegex),
+                ];
+
+                if (simpleMatches.length > 0) {
+                    console.log(
+                        "Extracted questions using simple regex:",
+                        simpleMatches.length
+                    );
+                    return simpleMatches
+                        .map((match) => match[1].trim())
+                        .filter((q) => q.length > 10);
+                }
+            } catch (regexError) {
+                console.error(
+                    "Error extracting questions with regex:",
+                    regexError
+                );
             }
 
             // If all else fails, return a default set of questions
+            console.log("Using default questions as fallback");
             return [
                 "What are the main topics covered in this video?",
                 "What are the key points discussed in this video?",
@@ -380,6 +427,11 @@ Transcript: """${transcript}"""
             ];
         }
 
+        // This line should never be reached due to the return statements above,
+        // but we'll keep it as an extra safeguard
+        console.log(
+            "Warning: Reached end of function without returning questions"
+        );
         return fullResponse;
     } catch (error) {
         console.error(
@@ -398,6 +450,10 @@ Transcript: """${transcript}"""
         } else if (error.message && error.message.includes("429")) {
             throw new Error(
                 "Rate limit exceeded. Please try again later or check your API quota."
+            );
+        } else if (error.message && error.message.includes("400")) {
+            throw new Error(
+                "Bad request. The transcript might be too long or contain invalid characters."
             );
         } else {
             console.error("Detailed error:", error);
