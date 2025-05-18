@@ -691,6 +691,12 @@ class TubeSumTalkWidget {
         // Reset cancel flag
         this.cancelRequested = false;
 
+        // Clear any cached transcript data to force a fresh fetch
+        window.currentTranscript = null;
+
+        // Force refresh of YouTube's player response data to get fresh transcript
+        window.ytInitialPlayerResponse = null;
+
         // If we have a global function to process the current video, use it
         // Pass true to force refresh even if video ID hasn't changed
         if (window.TubeSumTalk && window.TubeSumTalk.processCurrentVideo) {

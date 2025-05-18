@@ -165,6 +165,17 @@ async function processCurrentVideo(forceRefresh = false) {
         console.log("Forcing refresh of transcript data");
         currentTranscript = null;
         window.currentTranscript = null;
+
+        // Force a fresh fetch of transcript data by clearing any cached data
+        try {
+            // Clear any cached data in YouTube's player response
+            window.ytInitialPlayerResponse = null;
+
+            // Force reload of transcript data
+            console.log("Forcing reload of transcript data");
+        } catch (error) {
+            console.error("Error clearing cached data:", error);
+        }
     }
 
     try {

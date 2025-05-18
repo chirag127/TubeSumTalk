@@ -35,10 +35,17 @@ async function getTranscriptData() {
         window.ytInitialPlayerResponse.captions.playerCaptionsTracklistRenderer
     ) {
         console.log("Found transcript data in window.ytInitialPlayerResponse");
-        return {
-            captionTracks:
+
+        // Make a deep copy of the caption tracks to avoid reference issues
+        const captionTracks = JSON.parse(
+            JSON.stringify(
                 window.ytInitialPlayerResponse.captions
-                    .playerCaptionsTracklistRenderer.captionTracks,
+                    .playerCaptionsTracklistRenderer.captionTracks
+            )
+        );
+
+        return {
+            captionTracks: captionTracks,
         };
     }
 
@@ -139,7 +146,19 @@ async function getTranscriptData() {
 // Get transcript for a specific language
 async function getTranscript(url) {
     try {
-        const response = await fetch(url);
+        // Add a cache-busting parameter to the URL to ensure we get fresh data
+        const cacheBustUrl =
+            url + (url.includes("?") ? "&" : "?") + "_t=" + Date.now();
+        console.log("Fetching transcript with cache-busting URL");
+
+        const response = await fetch(cacheBustUrl, {
+            cache: "no-store", // Force bypassing the browser cache
+            headers: {
+                "Cache-Control": "no-cache, no-store, must-revalidate",
+                Pragma: "no-cache",
+                Expires: "0",
+            },
+        });
 
         if (response.status !== 200) {
             throw new Error(
