@@ -169,6 +169,12 @@ class TubeSumTalkWidget {
             </div>
           </div>
 
+          <div class="tubesumtalk-qa-container">
+            <div id="tubesumtalk-answer" class="tubesumtalk-answer">
+              <p class="tubesumtalk-placeholder">Ask a question about the video content to get an AI-generated answer based on the transcript.</p>
+            </div>
+          </div>
+
           <div class="tubesumtalk-suggested-questions">
             <div class="tubesumtalk-suggested-header">
               <h4>Suggested Questions</h4>
@@ -180,12 +186,6 @@ class TubeSumTalkWidget {
             </div>
             <div id="tubesumtalk-suggested-list" class="tubesumtalk-suggested-list">
               <p class="tubesumtalk-placeholder">Click "Refresh" to generate suggested questions based on the video content.</p>
-            </div>
-          </div>
-
-          <div class="tubesumtalk-qa-container">
-            <div id="tubesumtalk-answer" class="tubesumtalk-answer">
-              <p class="tubesumtalk-placeholder">Ask a question about the video content to get an AI-generated answer based on the transcript.</p>
             </div>
           </div>
 
@@ -886,17 +886,39 @@ class TubeSumTalkWidget {
     loadSuggestedQuestions() {
         console.log("Loading suggested questions");
 
-        // Show loading state
+        // Show loading state with timer
         const suggestedList = this.widgetElement.querySelector(
             "#tubesumtalk-suggested-list"
         );
         if (suggestedList) {
             suggestedList.innerHTML = `
             <div class="tubesumtalk-loading">
-              <div class="tubesumtalk-spinner tubesumtalk-pulse"></div>
-              <div class="tubesumtalk-loading-message">Generating suggested questions...</div>
+              <div class="tubesumtalk-spinner-container">
+                <div class="tubesumtalk-spinner tubesumtalk-pulse"></div>
+                <div class="tubesumtalk-timer tubesumtalk-timer-suggested" role="timer" aria-label="Processing time: 0 seconds">0s</div>
+              </div>
+              <div class="tubesumtalk-loading-text">
+                <div class="tubesumtalk-loading-message tubesumtalk-message-suggested">Generating suggested questions...</div>
+                <div class="tubesumtalk-loading-estimate tubesumtalk-estimate-suggested">This may take a few moments</div>
+              </div>
+              <button class="tubesumtalk-cancel-button tubesumtalk-cancel-suggested" aria-label="Cancel suggested questions generation">
+                <span>Cancel</span>
+              </button>
             </div>
             `;
+
+            // Add event listener to the cancel button
+            const cancelButton = suggestedList.querySelector(
+                ".tubesumtalk-cancel-suggested"
+            );
+            if (cancelButton) {
+                cancelButton.addEventListener("click", () => {
+                    this.cancelSuggestedQuestions();
+                });
+            }
+
+            // Start the timer
+            this.startProcessingTimer("suggested");
         }
 
         // Check if we have a transcript
@@ -970,8 +992,13 @@ class TubeSumTalkWidget {
                     );
                     if (questionInput) {
                         questionInput.value = question;
-                        // Focus the input field
-                        questionInput.focus();
+
+                        // Automatically process the question (similar to clicking the "Ask" button)
+                        console.log(
+                            "Auto-processing suggested question:",
+                            question
+                        );
+                        this.askQuestion(question);
                     }
                 }
             });
@@ -1437,9 +1464,12 @@ class TubeSumTalkWidget {
                     if (type === "summary") {
                         messageElement.textContent =
                             "Still generating summary... (taking longer than usual)";
-                    } else {
+                    } else if (type === "qa") {
                         messageElement.textContent =
                             "Still processing your question... (taking longer than usual)";
+                    } else if (type === "suggested") {
+                        messageElement.textContent =
+                            "Still generating suggested questions... (taking longer than usual)";
                     }
                 }
             }
@@ -1512,6 +1542,30 @@ class TubeSumTalkWidget {
             // Reset the processing flag
             this.isProcessingQuestion = false;
         }
+
+        // For suggested questions, we'll update the suggested questions area
+        if (type === "suggested") {
+            // Clear the timer
+            this.clearProcessingTimer(type);
+
+            // Show a message
+            const suggestedList = this.widgetElement.querySelector(
+                "#tubesumtalk-suggested-list"
+            );
+            if (suggestedList) {
+                suggestedList.innerHTML = `
+                <div class="tubesumtalk-placeholder">
+                    <p>Request cancelled. Click "Refresh" to try again.</p>
+                </div>
+                `;
+            }
+        }
+    }
+
+    // Cancel suggested questions generation
+    cancelSuggestedQuestions() {
+        console.log("Cancelling suggested questions generation");
+        this.handleCancelRequest("suggested");
     }
 
     // Show loading with timer for summary
