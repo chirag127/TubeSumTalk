@@ -1,0 +1,123 @@
+name: TubeSumTalk CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  lint_and_test:
+    name: Lint & Unit Test (Node.js/Vite)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: . # Assuming root directory contains package.json for extension
+
+    steps:
+      - name: 🚀 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 🟢 Set up Node.js Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # Modern LTS for stable JS/TS development
+          cache: 'npm'
+
+      - name: 📥 Install Dependencies (using npm)
+        run: npm ci
+
+      - name: 📐 Run Static Analysis (Biome Integration)
+        # Assuming Biome is configured for JS/TS linting/formatting checks
+        run: npm run lint
+
+      - name: 🧪 Execute Unit & Integration Tests (Vitest)
+        # Assuming 'test' script runs Vitest for extension logic validation
+        run: npm run test
+
+      - name: 📊 Upload Coverage Report
+        # This step assumes Vitest generates a Cobertura report for Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage/cobertura-coverage.xml
+          flags: 'unit'
+
+  build_artifact:
+    name: Build Extension Artifact
+    needs: lint_and_test
+    runs-on: ubuntu-latest
+    outputs:
+      release_tag: ${{ steps.create_tag.outputs.tag }}
+
+    steps:
+      - name: 🚀 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 🟢 Set up Node.js Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: 📥 Install Dependencies
+        run: npm ci
+
+      - name: 🏗️ Build Production Artifact (Vite/WXT)
+        # Assuming a build script produces a distributable zip/crx for the extension
+        run: npm run build
+
+      - name: 🔖 Create Version Tag (If on Main)
+        if: github.ref == 'refs/heads/main'
+        id: create_tag
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const packageJson = require('./package.json');
+            const version = packageJson.version;
+            const tag = `v${version}`;
+            github.rest.git.createRef({
+              ref: `refs/tags/${tag}`,
+              sha: context.sha,
+            });
+            core.setOutput('tag', tag);
+
+      - name: 📦 Archive Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tubeSumTalk-build-artifact
+          path: dist/  # Adjust this path based on actual Vite/WXT output directory
+          retention-days: 7
+
+  release:
+    name: Create GitHub Release
+    if: github.ref == 'refs/heads/main' && needs.build_artifact.outputs.release_tag != ''
+    needs: build_artifact
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: ⬇️ Download Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: tubeSumTalk-build-artifact
+          path: ./dist
+
+      - name: 🚀 Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ needs.build_artifact.outputs.release_tag }}
+          name: Release ${{ needs.build_artifact.outputs.release_tag }}
+          body: | 
+            Automated release for TubeSumTalk Browser Extension.
+            
+            Please find the distributable file in the attached assets.
+          draft: false
+          prerelease: false
+          files:
+            ./dist/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
