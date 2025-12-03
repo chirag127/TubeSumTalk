@@ -1,61 +1,58 @@
----
-name: Bug Report
-about: Report an issue found in TubeSumTalk
-title: "[BUG] "
-labels: bug, triage
+# Bug Report
 
----
+## 🎉 Project Context
+
+This bug report pertains to the **`VideoSumAI-AI-Powered-YouTube-Summarizer-Browser-Extension`** project.
+
+--- 
+
+## 🚀 Your Information
+
+*   **Browser & Version:**
+*   **Operating System:**
+
+--- 
 
 ## 🐛 Bug Description
 
-Please provide a clear and concise description of the bug. What did you expect to happen, and what actually happened?
+Clearly and concisely describe the bug. What happened? What did you expect to happen?
 
-**Expected behavior:**
+--- 
 
-**Actual behavior:**
+## 📝 Steps to Reproduce
 
----
+Please provide detailed steps to reproduce the bug. The easier it is to reproduce, the faster we can fix it!
 
-## 🔍 Steps to Reproduce
+1.  Go to [specific URL or section]
+2.  Perform action [e.g., Click button X]
+3.  Observe [specific outcome]
+4.  ...
 
-Provide clear, numbered steps that allow maintainers to reproduce the bug consistently. If the bug is intermittent, describe the conditions under which it appears.
+--- 
 
-1. 
-2. 
-3. 
-...
+## 📸 Screenshots/Recordings (Optional but Recommended)
 
----
+If applicable, add screenshots or a screen recording to help explain your problem. You can paste images directly into the comment box.
 
-## 🖥️ Environment Details
+--- 
 
-To help diagnose the issue, please specify the environment where the bug occurred. Reference the Project Operating System standards ([TubeSumTalk Overview](https://github.com/chirag127/TubeSumTalk-YouTube-Video-Summarizer-Browser-Extension)).
+## 💡 Additional Context (Optional)
 
-*   **Extension Version (if known):** 
-*   **Browser:** (e.g., Chrome 120, Firefox 118)
-*   **Browser Version:** 
-*   **YouTube Page Context:** (e.g., Standard Watch Page, Channel Page, Shorts Player)
-*   **API Key Status (if relevant):** (e.g., Valid Gemini API Key Used: Yes/No)
+Any other context about the problem. For example, specific YouTube videos where the bug occurs, performance issues, or relevant browser console logs.
 
----
-
-## 📸 Screenshots / Logs
-
-If applicable, add screenshots to help explain your problem. If you have relevant console logs, paste them below.
-
-text
-[Paste Console Logs Here]
+javascript
+// Paste any relevant console logs here
 
 
----
+--- 
 
-## 🧠 Agent Directive Alignment Check
+### **AI Agent Directives Reminder**
 
-As per the **Apex Architecture Mandate**, we adhere to **SOLID** principles and minimize state mutation. Does this bug appear related to unexpected state management or race conditions in asynchronous calls (Gemini/TTS)?
+*   **Tech Stack:** JavaScript, Browser Extension APIs, Google Gemini API (via backend/service worker).
+*   **Architecture:** Browser Extension (Content Scripts, Background Scripts, Popup UI).
+*   **Verification:** All reported bugs should be reproducible in a controlled environment before proceeding to code changes. Refer to `AGENTS.md` for specific testing protocols.
+*   **Primary Goal:** Enhance YouTube video consumption via AI-powered summarization and Q&A.
 
-[ ] Yes, seems like a race condition or state sync issue.
-[ ] No, seems like a straightforward logic or rendering failure.
+--- 
 
----
-
-**Thank you for reporting this issue and helping us maintain Zero-Defect velocity!**
+Thank you for helping us improve VideoSumAI!
