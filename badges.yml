@@ -1,61 +1,41 @@
-repository_name: TubeSumTalk-YouTube-Video-Summarizer-Browser-Extension
-owner: chirag127
-style: flat-square
-branch: main
-
 badges:
   - name: Build Status
-    group: CI/CD
-    url: https://github.com/chirag127/TubeSumTalk-YouTube-Video-Summarizer-Browser-Extension/actions/workflows/ci.yml
-    img_url: https://github.com/chirag127/TubeSumTalk-YouTube-Video-Summarizer-Browser-Extension/actions/workflows/ci.yml/badge.svg
-    alt_text: 'GitHub Workflow Status'
-    markdown: "[![GitHub Workflow Status](https://github.com/chirag127/TubeSumTalk-YouTube-Video-Summarizer-Browser-Extension/actions/workflows/ci.yml/badge.svg)](https://github.com/chirag127/TubeSumTalk-YouTube-Video-Summarizer-Browser-Extension/actions/workflows/ci.yml)"
-
+    alt_text: Build Status
+    image_url: https://github.com/chirag127/VideoSumAI-AI-Powered-YouTube-Summarizer-Browser-Extension/actions/workflows/ci.yml/badge.svg
+    link_url: https://github.com/chirag127/VideoSumAI-AI-Powered-YouTube-Summarizer-Browser-Extension/actions/workflows/ci.yml
+    markdown: "![Build Status](https://github.com/chirag127/VideoSumAI-AI-Powered-YouTube-Summarizer-Browser-Extension/actions/workflows/ci.yml/badge.svg)"
   - name: Code Coverage
-    group: Quality
-    url: https://codecov.io/gh/chirag127/TubeSumTalk-YouTube-Video-Summarizer-Browser-Extension
-    img_url: https://codecov.io/gh/chirag127/TubeSumTalk-YouTube-Video-Summarizer-Browser-Extension/branch/main/graph/badge.svg
-    alt_text: 'Code Coverage'
-    markdown: "[![Code Coverage](https://codecov.io/gh/chirag127/TubeSumTalk-YouTube-Video-Summarizer-Browser-Extension/branch/main/graph/badge.svg)](https://codecov.io/gh/chirag127/TubeSumTalk-YouTube-Video-Summarizer-Browser-Extension)"
-
+    alt_text: Code Coverage
+    image_url: https://codecov.io/gh/chirag127/VideoSumAI-AI-Powered-YouTube-Summarizer-Browser-Extension/branch/main/graph/badge.svg?style=flat-square
+    link_url: https://codecov.io/gh/chirag127/VideoSumAI-AI-Powered-YouTube-Summarizer-Browser-Extension
+    markdown: "[![Code Coverage](https://codecov.io/gh/chirag127/VideoSumAI-AI-Powered-YouTube-Summarizer-Browser-Extension/branch/main/graph/badge.svg?style=flat-square)](https://codecov.io/gh/chirag127/VideoSumAI-AI-Powered-YouTube-Summarizer-Browser-Extension)"
+  - name: Language - JavaScript
+    alt_text: JavaScript
+    image_url: https://img.shields.io/badge/Language-JavaScript-F7DF1E?style=flat-square&logo=javascript&logoColor=black
+    link_url: https://developer.mozilla.org/en-US/docs/Web/JavaScript
+    markdown: "![JavaScript](https://img.shields.io/badge/Language-JavaScript-F7DF1E?style=flat-square&logo=javascript&logoColor=black)"
+  - name: Extension Framework - WXT
+    alt_text: WXT
+    image_url: https://img.shields.io/badge/Extension_Framework-WXT-blueviolet?style=flat-square&logo=html5
+    link_url: https://wxt.dev/
+    markdown: "![WXT](https://img.shields.io/badge/Extension_Framework-WXT-blueviolet?style=flat-square&logo=html5)"
+  - name: AI API - Google Gemini
+    alt_text: Google Gemini API
+    image_url: https://img.shields.io/badge/AI_API-Google_Gemini-4285F4?style=flat-square&logo=google&logoColor=white
+    link_url: https://ai.google.dev/
+    markdown: "![Google Gemini API](https://img.shields.io/badge/AI_API-Google_Gemini-4285F4?style=flat-square&logo=google&logoColor=white)"
+  - name: Lint & Format - Biome
+    alt_text: Lint & Format
+    image_url: https://img.shields.io/badge/Lint_Format-Biome-blue?style=flat-square&logo=biome&logoColor=white
+    link_url: https://biomejs.dev/
+    markdown: "![Lint & Format](https://img.shields.io/badge/Lint_Format-Biome-blue?style=flat-square&logo=biome&logoColor=white)"
   - name: License
-    group: Legal
-    url: https://github.com/chirag127/TubeSumTalk-YouTube-Video-Summarizer-Browser-Extension/blob/main/LICENSE
-    img_url: https://img.shields.io/badge/License-CC%20BY--NC%204.0-blue.svg?style=flat-square
-    alt_text: 'License: CC BY-NC 4.0'
-    markdown: "[![License: CC BY-NC 4.0](https://img.shields.io/badge/License-CC%20BY--NC%204.0-blue.svg?style=flat-square)](https://github.com/chirag127/TubeSumTalk-YouTube-Video-Summarizer-Browser-Extension/blob/main/LICENSE)"
-
+    alt_text: License: CC BY-NC 4.0
+    image_url: https://img.shields.io/badge/License-CC_BY--NC_4.0-lightgrey?style=flat-square
+    link_url: https://creativecommons.org/licenses/by-nc/4.0/
+    markdown: "[![License: CC BY-NC 4.0](https://img.shields.io/badge/License-CC_BY--NC_4.0-lightgrey?style=flat-square)](https://creativecommons.org/licenses/by-nc/4.0/)"
   - name: GitHub Stars
-    group: Social
-    url: https://github.com/chirag127/TubeSumTalk-YouTube-Video-Summarizer-Browser-Extension/stargazers
-    img_url: https://img.shields.io/github/stars/chirag127/TubeSumTalk-YouTube-Video-Summarizer-Browser-Extension?style=flat-square&color=yellow
-    alt_text: 'GitHub Stars'
-    markdown: "[![GitHub Stars](https://img.shields.io/github/stars/chirag127/TubeSumTalk-YouTube-Video-Summarizer-Browser-Extension?style=flat-square&color=yellow)](https://github.com/chirag127/TubeSumTalk-YouTube-Video-Summarizer-Browser-Extension/stargazers)"
-
-  - name: Primary Language
-    group: Technology
-    url: https://www.typescriptlang.org/
-    img_url: https://img.shields.io/badge/Language-TypeScript%20%7C%20JS-3178C6.svg?style=flat-square&logo=typescript
-    alt_text: 'Primary Language: TypeScript/JavaScript'
-    markdown: "[![Language](https://img.shields.io/badge/Language-TypeScript%20%7C%20JS-3178C6.svg?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)"
-
-  - name: AI Model
-    group: Technology
-    url: https://ai.google.dev/gemini-api
-    img_url: https://img.shields.io/badge/AI%20Model-Gemini%20Pro-4285F4.svg?style=flat-square&logo=google
-    alt_text: 'AI Model: Gemini Pro'
-    markdown: "[![AI Model](https://img.shields.io/badge/AI%20Model-Gemini%20Pro-4285F4.svg?style=flat-square&logo=google)](https://ai.google.dev/gemini-api)"
-
-  - name: Extension Framework
-    group: Technology
-    url: https://wxt.dev
-    img_url: https://img.shields.io/badge/Extension%20Framework-WXT%20%7C%20Vite-6C47A7.svg?style=flat-square&logo=vite
-    alt_text: 'Extension Framework: WXT/Vite'
-    markdown: "[![Extension Framework](https://img.shields.io/badge/Extension%20Framework-WXT%20%7C%20Vite-6C47A7.svg?style=flat-square&logo=vite)](https://wxt.dev)"
-
-  - name: Linter & Formatter
-    group: Tooling
-    url: https://biomejs.dev
-    img_url: https://img.shields.io/badge/Linter%20%26%20Formatter-Biome-607BFF.svg?style=flat-square&logo=biome
-    alt_text: 'Linter & Formatter: Biome'
-    markdown: "[![Linter & Formatter](https://img.shields.io/badge/Linter%20%26%20Formatter-Biome-607BFF.svg?style=flat-square&logo=biome)](https://biomejs.dev)"
+    alt_text: GitHub Stars
+    image_url: https://img.shields.io/github/stars/chirag127/VideoSumAI-AI-Powered-YouTube-Summarizer-Browser-Extension?style=flat-square&color=yellow
+    link_url: https://github.com/chirag127/VideoSumAI-AI-Powered-YouTube-Summarizer-Browser-Extension/stargazers
+    markdown: "[![GitHub Stars](https://img.shields.io/github/stars/chirag127/VideoSumAI-AI-Powered-YouTube-Summarizer-Browser-Extension?style=flat-square&color=yellow)](https://github.com/chirag127/VideoSumAI-AI-Powered-YouTube-Summarizer-Browser-Extension/stargazers)"
