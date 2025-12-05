@@ -1,40 +1,53 @@
-# Dependency & Build Artifacts (JavaScript/Node.js/Vite/Extension Standard)
-
-# Dependency directories
+# Dependencies & Package Manager
+npm_modules/
 node_modules/
+jszip/
 
-# Build output directories
-dist/
+# Build Artifacts
 build/
-.next/
+dist/
+.output/
 
-# Development/IDE specific files
-.DS_Store
-.vscode/
+# Log Files
 *.log
-*.tmp
-
-# TypeScript & Configuration
-typescript.tsbuildinfo
-
-# Vite specific
-.vite-cache/
-
-# Browser Extension Specific (Chrome/Firefox)
-__snapshots__/
-
-# Testing artifacts (Vitest/Jest/Playwright if used)
-coverage/
-.nyc_output/
-playwright-report/
-
-# Source maps and deployment bundles
-*.map
+logs/
 
 # Environment Variables
 .env
+.env.*.local
 .env.local
 
-# Git specific
-.gitattributes
-.gitignore
+# OS Generated Files
+.DS_Store
+Thumbs.db
+
+# IDE & Editor Specific
+.vscode/
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Testing
+coverage/
+*.snap
+*.test.js.snap
+*.module.test.js.snap
+
+# Vite Specific
+.vite/
+
+# Extension Specific
+*.crx
+*.xpi
+
+# macOS specific files
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows specific files
+Thumbs.db
+
+# Linux specific files
+.Trash*
