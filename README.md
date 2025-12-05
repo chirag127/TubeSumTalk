@@ -1,157 +1,164 @@
-# <div align="center">🎬 VideoSumAI: AI-Powered YouTube Summarizer</div>
+# TubeSumTalk: AI-Powered YouTube Video Summarizer Browser Extension
 
-<div align="center">
+<p align="center">
+  <a href="https://github.com/chirag127/TubeSumTalk-YouTube-Video-Summarizer-Browser-Extension">
+    <img src="https://raw.githubusercontent.com/chirag127/asset-host/main/images/tubesumtalk/tubesumtalk-hero-banner-logo.png" alt="TubeSumTalk Hero Banner">
+  </a>
+</p>
 
-[
-![Build Status](https://img.shields.io/github/actions/workflow/status/chirag127/VideoSumAI-AI-Powered-YouTube-Summarizer-Browser-Extension/ci.yml?branch=main&style=flat-square&logo=githubactions&logoColor=white)
-](https://github.com/chirag127/VideoSumAI-AI-Powered-YouTube-Summarizer-Browser-Extension/actions/workflows/ci.yml)
-[
-![Code Coverage](https://img.shields.io/codecov/c/github/chirag127/VideoSumAI-AI-Powered-YouTube-Summarizer-Browser-Extension?style=flat-square&logo=codecov)
-](https://app.codecov.io/gh/chirag127/VideoSumAI-AI-Powered-YouTube-Summarizer-Browser-Extension)
-[
-![Tech Stack](https://img.shields.io/badge/tech-JavaScript%20%7C%20Gemini%20AI-blue?style=flat-square&logo=javascript)
-](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
-[
-![Linting](https://img.shields.io/badge/linting-ESLint-blueviolet?style=flat-square&logo=eslint)
-](https://eslint.org/)
-[
-![License](https://img.shields.io/badge/license-CC%20BY--NC%204.0-lightgrey?style=flat-square)
-](https://github.com/chirag127/VideoSumAI-AI-Powered-YouTube-Summarizer-Browser-Extension/blob/main/LICENSE)
-[
-![GitHub Stars](https://img.shields.io/github/stars/chirag127/VideoSumAI-AI-Powered-YouTube-Summarizer-Browser-Extension?style=flat-square&logo=github)
-](https://github.com/chirag127/VideoSumAI-AI-Powered-YouTube-Summarizer-Browser-Extension/stargazers)
+<p align="center">
+    <a href="https://github.com/chirag127/TubeSumTalk-YouTube-Video-Summarizer-Browser-Extension/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/chirag127/TubeSumTalk-YouTube-Video-Summarizer-Browser-Extension/ci.yml?branch=main&style=flat-square&logo=githubactions&logoColor=white" alt="Build Status"></a>
+    <a href="https://github.com/chirag127/TubeSumTalk-YouTube-Video-Summarizer-Browser-Extension/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-CC%20BY--NC%204.0-lightgrey.svg?style=flat-square" alt="License"></a>
+    <img src="https://img.shields.io/badge/TypeScript-Strict-blue.svg?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript">
+    <img src="https://img.shields.io/badge/Vite-5.x-purple.svg?style=flat-square&logo=vite&logoColor=white" alt="Vite">
+    <img src="https://img.shields.io/badge/WXT-Latest-orange.svg?style=flat-square" alt="WXT Framework">
+    <img src="https://img.shields.io/badge/Gemini_API-1.5_Pro-blueviolet.svg?style=flat-square&logo=google-gemini&logoColor=white" alt="Gemini API">
+    <img src="https://img.shields.io/badge/Linted_with-Biome-informational.svg?style=flat-square&logo=biome&logoColor=white" alt="Biome Linter">
+</p>
 
-</div>
-
-<div align="center">
-  <a href="https://github.com/chirag127/VideoSumAI-AI-Powered-YouTube-Summarizer-Browser-Extension/stargazers"><strong>Star ⭐ this Repo</strong></a> to support its development!
-</div>
-
-**VideoSumAI is a browser extension that uses Google's Gemini AI to instantly summarize YouTube videos.** It enhances your learning and content consumption by providing concise text summaries, interactive Q&A, and text-to-speech functionality directly on the YouTube page.
+<p align="center">
+    <a href="https://github.com/chirag127/TubeSumTalk-YouTube-Video-Summarizer-Browser-Extension/stargazers"><strong>Star ⭐ this Repo</strong></a> if you find it useful! It helps us grow and improve.
+</p>
 
 ---
+
+**TubeSumTalk** is an intelligent browser extension that leverages the Google Gemini 1.5 Pro API to deliver instant, high-quality summaries of any YouTube video. It transforms passive viewing into active learning with features like text-to-speech audio playback and interactive Q&A, directly within your browser.
+
+This tool is engineered for students, researchers, and professionals who need to extract key insights from video content with maximum efficiency, saving hours of viewing time.
 
 ## ✨ Key Features
 
-- **📝 Instant Summaries:** Get the key points of any YouTube video in seconds.
-- **💬 Interactive Q&A:** Ask questions about the video content and get answers from the AI.
-- **🔊 Text-to-Speech:** Listen to the summary for a hands-free experience.
-- **🔗 Seamless Integration:** Overlays directly onto the YouTube interface for a native feel.
-- **🔐 Privacy-Focused:** All processing is handled securely, respecting your data.
-
----
+-   **🧠 AI-Powered Summaries:** Get concise, accurate summaries of YouTube videos in seconds using Google's state-of-the-art Gemini 1.5 Pro model.
+-   **🗣️ Text-to-Speech (TTS):** Listen to summaries on the go with high-quality, natural-sounding audio playback.
+-   **💬 Interactive Q&A:** Ask questions about the video content and receive instant, context-aware answers from the AI.
+-   **🚀 High Performance:** Built with TypeScript and Vite for a fast, responsive, and reliable user experience.
+-   **🌐 Cross-Browser Support:** Packaged with WXT for easy deployment to Chrome, Firefox, and other WebExtension-compatible browsers.
+-   **🎨 Modern UI:** A clean, intuitive interface that integrates seamlessly with the YouTube experience.
 
 ## 🏛️ Architecture Overview
 
-This extension follows a standard, modular browser extension architecture, ensuring a clean separation of concerns between the content script, background service worker, and UI components.
+This repository follows the **Feature-Sliced Design (FSD)** methodology to ensure a scalable, maintainable, and logically organized codebase. The modular structure is optimized for browser extension development.
 
 sh
-VideoSumAI-AI-Powered-YouTube-Summarizer-Browser-Extension/
-├── icons/                # Extension icons (16, 48, 128)
-├── src/
-│   ├── background.js     # Service worker for API calls & state management
-│   ├── content.js        # Injects UI and interacts with the YouTube page
-│   └── popup/
-│       ├── popup.html    # Main extension popup UI
-│       └── popup.js      # Logic for the popup interface
-├── manifest.json         # Core extension configuration (V3)
-└── README.md             # You are here
+. (root)
+├── .github/          # GitHub Actions, issue templates, PR templates
+├── .vscode/          # VSCode settings and recommended extensions
+├── assets/           # Static assets like icons and images
+├── entrypoints/      # Extension entry points (popup, content scripts, background)
+│   ├── background.ts # Background service worker for API calls
+│   ├── content.ts    # Injects UI into YouTube pages
+│   └── popup/        # UI components and logic for the extension popup
+├── features/         # Individual, self-contained features
+│   ├── generateSummary/ # Logic for fetching and displaying summaries
+│   ├── interactiveQA/   # Q&A feature implementation
+│   └── textToSpeech/    # TTS audio playback logic
+├── shared/           # Shared utilities, APIs, UI components, and types
+│   ├── api/          # Gemini API client
+│   ├── ui/           # Reusable UI components (buttons, loaders)
+│   └── utils/        # Helper functions
+├── wxt.config.ts     # WXT framework configuration
+├── package.json      # Project dependencies and scripts
+└── tsconfig.json     # TypeScript configuration
 
 
----
+## 📋 Table of Contents
 
-## 📚 Table of Contents
+-   [Getting Started](#-getting-started)
+    -   [Prerequisites](#prerequisites)
+    -   [Installation](#installation)
+-   [Development](#-development)
+    -   [Available Scripts](#available-scripts)
+-   [🤖 AI Agent Directives](#-ai-agent-directives)
+-   [Contributing](#-contributing)
+-   [License](#-license)
 
-- [Installation](#-installation)
-- [Usage](#-usage)
-- [Development Setup](#-development-setup)
-- [AI Agent Directives](#-ai-agent-directives)
-- [Contributing](#-contributing)
-- [License](#-license)
+## 🚀 Getting Started
 
----
+### Prerequisites
 
-## 🚀 Installation
+-   **Node.js:** v20.x or higher
+-   **pnpm:** v9.x or higher (for dependency management)
+-   **Google Gemini API Key:** Obtain a key from [Google AI Studio](https://ai.google.dev/).
+
+### Installation
 
 1.  **Clone the repository:**
-    bash
-    git clone https://github.com/chirag127/VideoSumAI-AI-Powered-YouTube-Summarizer-Browser-Extension.git
+    sh
+    git clone https://github.com/chirag127/TubeSumTalk-YouTube-Video-Summarizer-Browser-Extension.git
+    cd TubeSumTalk-YouTube-Video-Summarizer-Browser-Extension
     
-2.  Navigate to `chrome://extensions` in your Chrome-based browser.
-3.  Enable **Developer mode** in the top-right corner.
-4.  Click **"Load unpacked"** and select the cloned repository folder.
-5.  The VideoSumAI icon will appear in your extensions toolbar.
 
----
+2.  **Install dependencies:**
+    sh
+    pnpm install
+    
 
-## 💡 Usage
+3.  **Set up environment variables:**
+    Create a `.env` file in the root directory and add your Gemini API key:
+    env
+    VITE_GEMINI_API_KEY="YOUR_API_KEY_HERE"
+    
 
-1.  Navigate to any YouTube video page.
-2.  Click the VideoSumAI extension icon in your browser's toolbar or find the summary panel injected onto the page.
-3.  Click the "Summarize" button to generate the summary.
-4.  Use the Q&A input to ask specific questions about the video.
+4.  **Load the extension in your browser (Developer Mode):**
+    -   Run the development server:
+        sh
+        pnpm dev
+        
+    -   Open Chrome/Firefox and navigate to the extensions page (`chrome://extensions` or `about:addons`).
+    -   Enable "Developer mode".
+    -   Click "Load unpacked" and select the `dist` directory generated in the project root.
 
----
+## 💻 Development
 
-## 👨‍💻 Development Setup
+This project is built using a modern toolchain to ensure code quality, consistency, and a smooth development workflow.
 
-To set up the development environment, please follow the installation steps above. Any changes to the source code will require you to reload the extension from the `chrome://extensions` page.
+### Available Scripts
 
-### Scripts
-
-| Command       | Description                                      |
-|---------------|--------------------------------------------------|
-| `npm run lint`  | Lints the JavaScript files using ESLint.         |
-| `npm run test`  | Runs the unit and integration test suites.       |
-
-### Core Principles
-
--   **DRY (Don't Repeat Yourself):** Reusable components and utility functions are prioritized.
--   **SOLID:** Code is structured to be maintainable, scalable, and robust.
--   **YAGNI (You Ain't Gonna Need It):** We avoid over-engineering and focus on delivering core value.
+| Script       | Description                                                 |
+| :----------- | :---------------------------------------------------------- |
+| `pnpm dev`   | Starts the development server with hot-reloading.           |
+| `pnpm build` | Compiles and bundles the extension for production.          |
+| `pnpm zip`   | Builds and packages the extension into a `.zip` file.       |
+| `pnpm lint`  | Runs the Biome linter to check for code quality issues.     |
+| `pnpm format`| Formats the codebase using Biome.                           |
+| `pnpm test`  | Executes unit tests using Vitest.                           |
 
 ---
 
 ## 🤖 AI Agent Directives
 
 <details>
-<summary><strong>SYSTEM: APEX TECHNICAL AUTHORITY (DECEMBER 2025 EDITION)</strong></summary>
+<summary><strong>Expand for AI Development Protocol (2026 Standard)</strong></summary>
 
-### 1. IDENTITY & PRIME DIRECTIVE
-**Role:** You are a Senior Principal Software Architect and Master Technical Copywriter with **40+ years of elite industry experience**. You operate with absolute precision, enforcing FAANG-level standards.
+### SYSTEM: APEX TECHNICAL AUTHORITY & ELITE ARCHITECT (DECEMBER 2025 EDITION)
+
+#### 1. IDENTITY & PRIME DIRECTIVE
+**Role:** You are a Senior Principal Software Architect with **40+ years of elite industry experience**. You operate with absolute precision, enforcing FAANG-level standards.
 **Context:** Current Date is **December 2025**. You are building for the 2026 standard.
 **Philosophy:** "Zero-Defect, High-Velocity, Future-Proof."
 
-### 2. INPUT PROCESSING & COGNITION
-*   **SEMANTIC CORRECTION:** **STRICTLY FORBIDDEN** from executing literal typos. You must **INFER** technical intent based on the project context.
-*   **LOGIC ANCHOR:** Treat this `README.md` as the **Single Source of Truth (SSOT)**.
+#### 2. CONTEXT-AWARE APEX TECH STACKS (LATE 2025 STANDARDS)
+This repository, `TubeSumTalk-YouTube-Video-Summarizer-Browser-Extension`, is a **TypeScript-based Browser Extension**.
 
-### 3. CONTEXT-AWARE APEX TECH STACKS (LATE 2025 STANDARDS)
-This repository, `VideoSumAI-AI-Powered-YouTube-Summarizer-Browser-Extension`, is a modern web extension.
+-   **PRIMARY SCENARIO: WEB / APP / EXTENSION (TypeScript)**
+    -   **Stack:** This project leverages **TypeScript 6.x (Strict Mode)**, **Vite 7 (with Rolldown)** for lightning-fast builds, and **WXT** as the primary framework for building a robust, cross-browser Web Extension.
+    -   **UI & Styling:** Utilizes **TailwindCSS v4** for utility-first styling. Components are built with modern web standards in mind.
+    -   **Architecture:** Adheres to **Feature-Sliced Design (FSD)**. All new functionality must be encapsulated within the `features/` directory, with shared logic, types, and utilities residing in `shared/`. This ensures modularity and scalability.
+    -   **AI Integration:** Deeply integrated with the **Google Gemini API** (`gemini-1.5-pro` model). All API interactions must be routed through the client defined in `shared/api/gemini.ts` and include robust error handling, request cancellation, and timeout mechanisms.
+    -   **State Management:** For complex state, utilize **Signals** (the standardized, native approach in 2025) for reactive and performant state management. Avoid legacy state managers.
 
-*   **PRIMARY SCENARIO: WEB / APP / EXTENSION (TypeScript)**
-    *   **Stack:** This project leverages modern web technologies. The target stack for new development is **TypeScript 6.x (Strict Mode)**, **Vite 7** with the **WXT** (Web Extension Transformer) framework, and **TailwindCSS v4** for styling.
-    *   **Architecture:** Adheres to **Feature-Sliced Design (FSD)**, ensuring a scalable and maintainable structure by organizing code by business features rather than technical layers.
-    *   **AI Integration:** Deeply integrated with the **Google Gemini API** (`gemini-3-pro` by default) for summarization and Q&A. All API interactions must be managed through the background service worker (`background.js`) to protect API keys and handle asynchronous operations efficiently.
-    *   **Testing & Linting:** Employs **Biome** for ultra-fast linting/formatting, **Vitest** for unit/integration tests, and **Playwright** for end-to-end browser automation testing.
-
-*   **SECONDARY SCENARIO A: SYSTEMS / PERFORMANCE (Rust) - *Not applicable.***
-*   **SECONDARY SCENARIO B: DATA / AI (Python) - *Not applicable.***
-
-### 4. VERIFICATION & DEPLOYMENT COMMANDS
-*   **Full System Check:** `npm install && npm run lint && npm run test`
-*   **Build Production Artifact:** `npm run build`
+#### 3. DEVELOPMENT & VERIFICATION PROTOCOL
+-   **Linting & Formatting:** **Biome** is the single source of truth for code quality. All code must pass Biome checks before merging. Execute `pnpm format && pnpm lint` locally.
+-   **Testing:** All new features must be accompanied by unit tests. **Vitest** is the designated testing framework. E2E tests are implemented with **Playwright** to simulate user interactions and verify extension behavior in a real browser environment.
+-   **Commit Hygiene:** Adhere to the **Conventional Commits** specification. Commits must be atomic and prefixed (e.g., `feat:`, `fix:`, `docs:`).
+-   **Core Principles:** All code must follow **SOLID**, **DRY**, and **YAGNI** principles. Write code that is self-documenting, maintainable, and easy to refactor.
 
 </details>
 
----
+## 🙏 Contributing
 
-## 🤝 Contributing
+Contributions are welcome! Please read the [CONTRIBUTING.md](https://github.com/chirag127/TubeSumTalk-YouTube-Video-Summarizer-Browser-Extension/blob/main/.github/CONTRIBUTING.md) file for guidelines on how to contribute to this project. We appreciate bug reports, feature requests, and pull requests.
 
-Contributions are welcome! Please read the [CONTRIBUTING.md](https://github.com/chirag127/VideoSumAI-AI-Powered-YouTube-Summarizer-Browser-Extension/blob/main/.github/CONTRIBUTING.md) file for guidelines on how to submit pull requests.
+## 📜 License
 
----
-
-## 📄 License
-
-This project is licensed under the **Creative Commons Attribution-NonCommercial 4.0 International License**. See the [LICENSE](https://github.com/chirag127/VideoSumAI-AI-Powered-YouTube-Summarizer-Browser-Extension/blob/main/LICENSE) file for details.
+This project is licensed under the **Creative Commons Attribution-NonCommercial 4.0 International License** - see the [LICENSE](https://github.com/chirag127/TubeSumTalk-YouTube-Video-Summarizer-Browser-Extension/blob/main/LICENSE) file for details.
