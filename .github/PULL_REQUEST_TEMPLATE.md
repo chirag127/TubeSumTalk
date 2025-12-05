@@ -1,65 +1,48 @@
-# Pull Request Template: Apex Integration Review
+# Pull Request Template
 
-**Project:** TubeSumTalk - YouTube Video Summarizer Browser Extension
+**This template guides the submission of Pull Requests to ensure quality, maintainability, and alignment with project standards.**
 
-This template ensures your contribution meets the **Zero-Defect, High-Velocity, Future-Proof** standard mandated by the Apex Technical Authority.
+## 1. PR Checklist
+
+Before submitting your Pull Request, please ensure you have reviewed and completed the following:
+
+*   [ ] **New Feature Branch:** My changes are based on a new branch (`feature/short-description` or `fix/issue-number`).
+*   [ ] **Code Style & Linting:** Code adheres to the project's established style guide and passes all linter checks (e.g., Ruff for Python, Prettier/ESLint for JS/TS).
+*   [ ] **Testing:** All new and existing tests pass. Unit tests are included for new functionality.
+*   [ ] **Documentation:** Relevant documentation (README, code comments) has been updated to reflect the changes.
+*   [ ] **Security:** No new security vulnerabilities have been introduced. Sensitive information is not hardcoded.
+*   [ ] **Dependencies:** If new dependencies were added, they have been vetted and added to the appropriate lock file.
+*   [ ] **Meaningful Commits:** Commit messages are clear, concise, and follow conventional commit standards (e.g., `feat:`, `fix:`, `docs:`, `refactor:`, `test:`).
+*   [ ] **Rebased:** The branch has been rebased onto the latest `main` branch.
+*   [ ] **Self-Review:** I have reviewed my own code at least once before submitting.
+
+## 2. Description of Changes
+
+*   **What was changed?**
+    *   (Clearly and concisely describe the main purpose of this PR. What problem does it solve? What feature does it add?)
+*   **Why was this change necessary?**
+    *   (Explain the rationale behind the changes. Link to any relevant issues or discussions.)
+*   **How was this change implemented?**
+    *   (Briefly explain the technical approach taken.)
+
+## 3. Related Issues
+
+*   (Link to any GitHub Issues that this PR addresses, e.g., `Closes #123`, `Fixes #456`)
+
+## 4. Screenshots/Recordings (if applicable for UI/UX changes)
+
+*   (Include before/after screenshots or short GIF recordings to demonstrate UI changes.)
+
+## 5. Additional Context
+
+*   (Provide any other context that might be helpful for reviewers, such as potential side effects, performance considerations, or areas that require extra attention.)
 
 --- 
 
-## 1. Summary of Changes
+**Reviewers:** Please focus on the following aspects:
 
-<!-- Briefly describe the purpose of this PR. Link to any relevant issue using `Closes #<IssueNumber>`. -->
-
-- **Type of Change:** (e.g., Feature, Bug Fix, Refactoring, Documentation, CI/CD)
-- **What this PR achieves:** 
-
----
-
-## 2. Architectural Verification
-
-<!-- Confirm adherence to the established architecture (e.g., FSD, SOLID, DRY). -->
-
-### 2.1. Architectural Compliance Checklist
-
-- [ ] **SOLID Principles Applied:** Are classes/modules single-responsibility? (Especially crucial for API handlers and UI logic).
-- [ ] **DRY Enforcement:** Have repeated code segments been abstracted into reusable modules?
-- [ ] **State Management Integrity:** If applicable, is state handled immutably and predictably (using Signals/Zustand/etc.)?
-- [ ] **Security Review:** Have all new user inputs been sanitized against XSS/CSRF vectors (critical for Browser Extensions)?
-- [ ] **AI Interface Robustness:** If Gemini interaction changed, is error handling for API failures (`429`, network timeout) robust?
-
----
-
-## 3. Code Quality & Testing
-
-<!-- Detail testing performed and adherence to linting standards. -->
-
-### 3.1. Testing Procedures
-
-- [ ] **Unit Tests:** Have new or modified functions been covered by Vitest/Jest unit tests? (Minimum 80% coverage target).
-- [ ] **E2E/Integration Tests:** If UI flow changes, have Playwright scenarios been updated or created?
-- [ ] **Manual Verification:** (Describe brief manual steps taken to confirm functionality in a real browser environment, e.g., "Tested summary generation on a 30-min video.")
-
-### 3.2. Linting & Formatting
-
-- [ ] **Biome Check:** Did `npx @biomejs/biome check .` pass successfully?
-- [ ] **Format Check:** Did `npx @biomejs/biome format --write .` resolve all formatting issues?
-
----
-
-## 4. Documentation Artifacts
-
-<!-- Changes to documentation must be explicitly called out. -->
-
-- [ ] **README.md Update:** Are the new features/changes reflected in the main README?
-- [ ] **AGENTS.md Compliance:** If architecture changed, has the relevant section in `.github/AGENTS.md` been updated to reflect the new stack/patterns?
-- [ ] **In-Code Comments:** Are complex sections clearly annotated using JSDoc/TSDoc standards?
-
----
-
-## 5. Reviewer Notes
-
-<!-- Add specific instructions for the reviewer, areas to focus on, or known limitations of this PR. -->
-
-*Self-Correction Notes:*
-
-<!-- --- -->
+*   Code correctness and logic.
+*   Adherence to architectural patterns (see AGENTS.md for directives).
+*   Test coverage and effectiveness.
+*   Clarity of code and documentation.
+*   Potential performance bottlenecks or security concerns.
